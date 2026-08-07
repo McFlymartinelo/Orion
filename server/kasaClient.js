@@ -4,7 +4,9 @@
 
 import 'dotenv/config';
 import os from 'node:os';
-import { Client } from 'tplink-smarthome-api';
+import tplink from 'tplink-smarthome-api';
+
+const { Client } = tplink;
 
 const TIMEOUT_MS = 4000;
 
