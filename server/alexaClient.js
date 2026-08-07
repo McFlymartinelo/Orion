@@ -29,7 +29,8 @@ function openBrowser(url) {
 }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const COOKIE_PATH = path.join(__dirname, '.alexa-cookie.json');
+const dataDir = process.env.ORION_DATA_DIR || __dirname;
+const COOKIE_PATH = path.join(dataDir, '.alexa-cookie.json');
 
 export class AlexaUnavailableError extends Error {}
 

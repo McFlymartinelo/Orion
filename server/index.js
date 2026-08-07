@@ -2,6 +2,9 @@
 // Les clés API restent côté serveur, le frontend n'appelle que /api/*.
 
 import 'dotenv/config';
+import { existsSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import express from 'express';
 import { getIndoorOutdoorTemperatures } from './netatmoClient.js';
 import { getLights, setLightState, pairBridge, HueUnavailableError } from './hueClient.js';
@@ -43,7 +46,9 @@ import {
 
 const app = express();
 app.use(express.json());
-const PORT = process.env.NETATMO_PROXY_PORT || 4000;
+const PORT = Number(process.env.PORT || process.env.NETATMO_PROXY_PORT || 4000);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const distPath = path.resolve(__dirname, '../dist');
 
 // Petit cache mémoire pour éviter de spammer l'API Netatmo si le frontend
 // recharge la page plusieurs fois d'affilée (Netatmo ne rafraîchit ses capteurs
@@ -337,8 +342,19 @@ app.put('/api/alexa/devices/:id', async (req, res) => {
 // ── Santé ────────────────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
-app.listen(PORT, () => {
-  console.log(`[orion-server] Proxy à l'écoute sur http://localhost:${PORT}`);
+// En production (Docker / npm run build), Express sert le frontend Vite.
+if (existsSync(distPath)) {
+  app.use(express.static(distPath, { index: false }));
+  app.get(/^(?!\/api(?:\/|$)).*/, (_req, res) => {
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+}
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`[orion-server] À l'écoute sur http://0.0.0.0:${PORT}`);
+  if (existsSync(distPath)) {
+    console.log(`[orion-server] Frontend servi depuis ${distPath}`);
+  }
   if (!process.env.HUE_BRIDGE_IP || !process.env.HUE_API_KEY) {
     console.warn('[hue] HUE_BRIDGE_IP ou HUE_API_KEY manquant dans .env — Hue désactivé');
   }

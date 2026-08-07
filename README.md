@@ -30,6 +30,27 @@ npm run build    # build de production dans dist/
 npm run preview  # prévisualisation du build
 ```
 
+## Déploiement Docker
+
+Une image multi-stage compile le frontend Vite puis lance Express, qui sert à
+la fois `/api/*` et les fichiers statiques de `dist/`.
+
+Prérequis : un fichier `.env` (voir `.env.example`). Les tokens Netatmo / Alexa
+sont persistés dans le volume Docker `orion-data`.
+
+```bash
+# Sur la machine hôte (NAS, mini-PC, etc.)
+cd /srv/docker/orion   # ou le chemin de votre clone
+cp .env.example .env   # puis renseigner les secrets
+docker compose up -d --build
+```
+
+L’UI et l’API sont alors sur `http://<hôte>:4000` (variable `ORION_PORT` pour
+changer le port publié). Santé : `GET /api/health`.
+
+Pour la découverte LAN (Hue / Kasa / Yeelight), si le mode bridge ne suffit pas,
+décommentez `network_mode: host` dans `compose.yaml` (Linux uniquement).
+
 ## Connexion à Netatmo (température intérieure/extérieure réelle)
 
 Le frontend ne parle jamais directement à l'API Netatmo (le `client_secret` ne

@@ -9,7 +9,8 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const STORE_PATH = path.join(__dirname, '.netatmo-token.json');
+const dataDir = process.env.ORION_DATA_DIR || __dirname;
+const STORE_PATH = path.join(dataDir, '.netatmo-token.json');
 
 export function readTokenStore() {
   if (!existsSync(STORE_PATH)) return null;

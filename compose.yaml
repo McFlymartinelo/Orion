@@ -1,0 +1,23 @@
+services:
+  orion:
+    build: .
+    container_name: orion
+    restart: unless-stopped
+    ports:
+      - "${ORION_PORT:-4000}:4000"
+    env_file:
+      - .env
+    environment:
+      PORT: "4000"
+      NETATMO_PROXY_PORT: "4000"
+      ORION_DATA_DIR: /app/data
+      # NODE_ENV est déjà fixé dans l'image
+    volumes:
+      # Persiste les tokens OAuth Netatmo + cookie Alexa (filesystem éphémère sinon)
+      - orion-data:/app/data
+    # Décommentez si la découverte LAN (Hue/Kasa/Yeelight UDP) échoue en bridge :
+    # network_mode: host
+    # (sous Linux uniquement ; retirez alors le mapping ports: ci-dessus)
+
+volumes:
+  orion-data:
