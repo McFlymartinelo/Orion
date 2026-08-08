@@ -5,6 +5,19 @@ import { readTokenStore, writeTokenStore } from './tokenStore.js';
 
 const TOKEN_URL = 'https://api.netatmo.com/oauth2/token';
 const STATIONS_URL = 'https://api.netatmo.com/api/getstationsdata';
+const MEASURE_URL = 'https://api.netatmo.com/api/getmeasure';
+
+const METRIC_CONFIG = {
+  indoorTemp: { type: 'temperature', module: 'indoor', unit: '°C' },
+  outdoorTemp: { type: 'temperature', module: 'outdoor', unit: '°C' },
+  indoorHumidity: { type: 'humidity', module: 'indoor', unit: '%' },
+  co2: { type: 'co2', module: 'indoor', unit: 'ppm' },
+};
+
+const RANGE_CONFIG = {
+  '24h': { scale: '30min', hours: 24 },
+  '7d': { scale: '3hours', hours: 24 * 7 },
+};
 
 // Marge de sécurité avant expiration pour éviter d'utiliser un token périmé
 const EXPIRY_MARGIN_MS = 30_000;
@@ -87,7 +100,7 @@ function findModule(devices, predicate) {
   return null;
 }
 
-export async function getIndoorOutdoorTemperatures() {
+async function fetchStationsData() {
   const token = await getAccessToken();
   const res = await fetch(STATIONS_URL, {
     headers: { Authorization: `Bearer ${token}` },
@@ -104,8 +117,25 @@ export async function getIndoorOutdoorTemperatures() {
     throw new Error('Aucune station Netatmo trouvée sur ce compte.');
   }
 
-  const indoor = devices[0]; // module principal (station intérieure)
+  return devices;
+}
+
+function resolveStationRefs(devices) {
+  const indoor = devices[0];
   const outdoor = findModule(devices, (m) => m.type === 'NAModule1') || indoor;
+
+  return {
+    indoor,
+    outdoor,
+    deviceId: indoor._id,
+    indoorModuleId: indoor._id,
+    outdoorModuleId: outdoor._id,
+  };
+}
+
+export async function getIndoorOutdoorTemperatures() {
+  const devices = await fetchStationsData();
+  const { indoor, outdoor } = resolveStationRefs(devices);
   const indoorDash = indoor?.dashboard_data || {};
   const outdoorDash = outdoor?.dashboard_data || {};
 
@@ -125,6 +155,73 @@ export async function getIndoorOutdoorTemperatures() {
     lastSeen: indoorDash.time_utc
       ? new Date(indoorDash.time_utc * 1000).toISOString()
       : null,
+  };
+}
+
+export async function getClimateHistory(range = '24h', metric = 'indoorTemp') {
+  const rangeConfig = RANGE_CONFIG[range];
+  const metricConfig = METRIC_CONFIG[metric];
+
+  if (!rangeConfig) {
+    throw new Error(`Plage invalide : ${range}`);
+  }
+  if (!metricConfig) {
+    throw new Error(`Métrique invalide : ${metric}`);
+  }
+
+  const devices = await fetchStationsData();
+  const refs = resolveStationRefs(devices);
+  const moduleId =
+    metricConfig.module === 'outdoor' ? refs.outdoorModuleId : refs.indoorModuleId;
+
+  const dateEnd = Math.floor(Date.now() / 1000);
+  const dateBegin = dateEnd - rangeConfig.hours * 3600;
+  const token = await getAccessToken();
+
+  const params = new URLSearchParams({
+    device_id: refs.deviceId,
+    module_id: moduleId,
+    scale: rangeConfig.scale,
+    type: metricConfig.type,
+    date_begin: String(dateBegin),
+    date_end: String(dateEnd),
+  });
+
+  const res = await fetch(`${MEASURE_URL}?${params.toString()}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`Appel getmeasure échoué (${res.status}) : ${text}`);
+  }
+
+  const json = await res.json();
+  const rows = json.body || [];
+
+  const points = rows
+    .map((row) => {
+      const timestamp = Array.isArray(row) ? row[0] : null;
+      const values = Array.isArray(row) ? row[1] : null;
+      const value = Array.isArray(values) ? values[0] : null;
+
+      if (typeof timestamp !== 'number' || typeof value !== 'number') {
+        return null;
+      }
+
+      return {
+        at: new Date(timestamp * 1000).toISOString(),
+        value,
+      };
+    })
+    .filter(Boolean);
+
+  return {
+    available: true,
+    metric,
+    range,
+    unit: metricConfig.unit,
+    points,
   };
 }
 

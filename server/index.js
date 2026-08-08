@@ -6,7 +6,8 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
-import { getIndoorOutdoorTemperatures } from './netatmoClient.js';
+import { getIndoorOutdoorTemperatures, getClimateHistory } from './netatmoClient.js';
+import { getOrionNotifications } from './notificationsService.js';
 import { getLights, setLightState, pairBridge, HueUnavailableError } from './hueClient.js';
 import {
   getDeviceStatus,
@@ -57,6 +58,9 @@ let lastPayload = null;
 let lastFetchedAt = 0;
 const CACHE_TTL_MS = 60_000;
 
+const historyCache = new Map();
+const HISTORY_CACHE_TTL_MS = 5 * 60_000;
+
 app.get('/api/netatmo', async (_req, res) => {
   const now = Date.now();
   if (lastPayload && now - lastFetchedAt < CACHE_TTL_MS) {
@@ -71,6 +75,44 @@ app.get('/api/netatmo', async (_req, res) => {
   } catch (err) {
     console.error('[netatmo]', err.message);
     res.status(502).json({ error: err.message });
+  }
+});
+
+app.get('/api/netatmo/history', async (req, res) => {
+  const range = typeof req.query.range === 'string' ? req.query.range : '24h';
+  const metric = typeof req.query.metric === 'string' ? req.query.metric : 'indoorTemp';
+  const cacheKey = `${range}:${metric}`;
+  const now = Date.now();
+  const cached = historyCache.get(cacheKey);
+
+  if (cached && now - cached.fetchedAt < HISTORY_CACHE_TTL_MS) {
+    return res.json(cached.payload);
+  }
+
+  try {
+    const payload = await getClimateHistory(range, metric);
+    historyCache.set(cacheKey, { payload, fetchedAt: now });
+    res.json(payload);
+  } catch (err) {
+    console.error('[netatmo/history]', err.message);
+    res.status(502).json({
+      available: false,
+      metric,
+      range,
+      unit: null,
+      points: [],
+      error: err.message,
+    });
+  }
+});
+
+app.get('/api/notifications', async (_req, res) => {
+  try {
+    const payload = await getOrionNotifications();
+    res.json(payload);
+  } catch (err) {
+    console.error('[notifications]', err.message);
+    res.status(502).json({ available: false, items: [], error: err.message });
   }
 });
 
