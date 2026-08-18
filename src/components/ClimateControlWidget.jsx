@@ -58,6 +58,13 @@ function formatWatts(watts) {
   return `${n.toFixed(1)} W`;
 }
 
+function formatKwh(kwh) {
+  if (kwh == null || Number.isNaN(Number(kwh))) return null;
+  const n = Number(kwh);
+  if (n >= 100) return `${Math.round(n)} kWh`;
+  return `${n.toFixed(2)} kWh`;
+}
+
 export default function ClimateControlWidget({ deviceId = 'clim-mobile' }) {
   const device = useOrionStore((s) => s.devices[deviceId]);
   const powerPlug = useOrionStore((s) => {
@@ -65,7 +72,6 @@ export default function ClimateControlWidget({ deviceId = 'clim-mobile' }) {
     return clim?.powerPlugId ? s.devices[clim.powerPlugId] ?? null : null;
   });
   const tuya = useOrionStore((s) => s.tuya);
-  const kasa = useOrionStore((s) => s.kasa);
   const toggleDevice = useOrionStore((s) => s.toggleDevice);
   const adjustTargetTemp = useOrionStore((s) => s.adjustTargetTemp);
   const setTargetTemp = useOrionStore((s) => s.setTargetTemp);
@@ -161,9 +167,14 @@ export default function ClimateControlWidget({ deviceId = 'clim-mobile' }) {
             <div className="min-w-0">
               <p className="truncate text-sm font-medium text-white">{powerPlug.name}</p>
               <p className="text-[11px] text-slate-400">
-                {powerPlug.on ? 'Alimentation ON' : 'Éteint'}
-                {kasa.connected ? ' · live' : ''}
+                {powerPlug.on ? formatWatts(powerPlug.watts) : 'Éteint'}
+                {powerPlug.on && powerPlug.hasEmeter && powerPlug.voltage != null && (
+                  <span className="text-slate-500"> · {Math.round(powerPlug.voltage)} V</span>
+                )}
               </p>
+              {powerPlug.hasEmeter && formatKwh(powerPlug.energyKwh) && (
+                <p className="mt-0.5 text-[10px] text-slate-500">Cumul {formatKwh(powerPlug.energyKwh)}</p>
+              )}
             </div>
           </div>
 
