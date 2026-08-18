@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'react';
-import { Minus, Plus, Snowflake, Wind, Droplets, Zap } from 'lucide-react';
+import { Minus, Plus, Snowflake, Wind, Droplets, Zap, Power } from 'lucide-react';
 import useOrionStore from '../store/useOrionStore';
 
 const GAUGE_SIZE = 200;
@@ -143,32 +143,57 @@ export default function ClimateControlWidget({ deviceId = 'clim-mobile' }) {
       </div>
 
       {powerPlug && (
-        <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-violet-400/20 bg-violet-400/5 px-3 py-2.5">
-          <div className="flex min-w-0 items-center gap-2">
-            <Zap size={14} className={powerPlug.on ? 'text-amber-300' : 'text-slate-500'} />
+        <div
+          className={`mb-4 flex items-center justify-between gap-3 rounded-2xl border p-4 transition ${
+            powerPlug.on
+              ? 'border-amber-400/50 bg-amber-400/10 shadow-[0_0_16px_rgba(245,158,11,0.25)]'
+              : 'border-white/10 bg-white/[0.03]'
+          }`}
+        >
+          <div className="flex min-w-0 items-center gap-2.5">
+            <div
+              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
+                powerPlug.on ? 'bg-amber-400/20 text-amber-300' : 'bg-white/5 text-slate-500'
+              }`}
+            >
+              <Zap size={16} />
+            </div>
             <div className="min-w-0">
-              <p className="text-[11px] font-medium text-white">{powerPlug.name}</p>
-              <p className="text-[10px] text-slate-400">
-                {powerPlug.on ? 'Alimentation ON' : 'Alimentation OFF'}
+              <p className="truncate text-sm font-medium text-white">{powerPlug.name}</p>
+              <p className="text-[11px] text-slate-400">
+                {powerPlug.on ? 'Alimentation ON' : 'Éteint'}
                 {kasa.connected ? ' · live' : ''}
-                {' · '}
-                <span className="tabular-nums text-amber-300/90">
-                  {powerPlug.on ? formatWatts(powerPlug.watts) : '0 W'}
-                </span>
               </p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => toggleDevice(powerPlug.id)}
-            className={`shrink-0 rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide transition ${
-              powerPlug.on
-                ? 'bg-amber-400/20 text-amber-200 shadow-[0_0_12px_rgba(251,191,36,0.35)]'
-                : 'bg-white/5 text-slate-400'
-            }`}
-          >
-            {powerPlug.on ? 'Prise ON' : 'Prise OFF'}
-          </button>
+
+          <div className="flex shrink-0 items-center gap-2">
+            {powerPlug.on && (
+              <span className="flex items-center gap-1 rounded-lg bg-amber-400/10 px-2 py-1 font-display text-sm font-bold tabular-nums text-amber-300">
+                <Zap size={12} className="opacity-80" />
+                {formatWatts(powerPlug.watts).replace(' W', '')}
+                <span className="text-[10px] font-semibold opacity-70">W</span>
+              </span>
+            )}
+            <div
+              role="switch"
+              aria-checked={powerPlug.on}
+              onClick={() => toggleDevice(powerPlug.id)}
+              className={`flex h-7 w-12 cursor-pointer items-center rounded-full border transition ${
+                powerPlug.on
+                  ? 'justify-end border-amber-400/60 bg-amber-400/30'
+                  : 'justify-start border-white/10 bg-white/5'
+              } px-0.5`}
+            >
+              <span
+                className={`flex h-[22px] w-[22px] items-center justify-center rounded-full bg-white shadow transition ${
+                  powerPlug.on ? 'text-amber-500' : 'text-slate-400'
+                }`}
+              >
+                <Power size={12} />
+              </span>
+            </div>
+          </div>
         </div>
       )}
 
