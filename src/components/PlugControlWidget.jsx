@@ -16,9 +16,17 @@ function formatKwh(kwh) {
   return `${n.toFixed(2)} kWh`;
 }
 
+const ELECTRICITY_PRICE_PER_KWH = 0.17;
+
+function formatPrice(kwh) {
+  if (kwh == null || Number.isNaN(Number(kwh))) return null;
+  return `${(Number(kwh) * ELECTRICITY_PRICE_PER_KWH).toFixed(2)} €`;
+}
+
 function PlugCard({ device, active, onToggle, onSelect }) {
   const wattsLabel = device.on ? formatWatts(device.watts) : 'Éteint';
   const kwhLabel = device.hasEmeter ? formatKwh(device.energyKwh) : null;
+  const priceLabel = device.hasEmeter ? formatPrice(device.energyKwh) : null;
 
   return (
     <button
@@ -47,7 +55,10 @@ function PlugCard({ device, active, onToggle, onSelect }) {
               )}
             </p>
             {kwhLabel && (
-              <p className="mt-0.5 text-[10px] text-slate-500">Cumul {kwhLabel}</p>
+              <p className="mt-0.5 text-[10px] text-slate-500">
+                Cumul {kwhLabel}
+                {priceLabel && <span> · ≈ {priceLabel}</span>}
+              </p>
             )}
           </div>
         </div>

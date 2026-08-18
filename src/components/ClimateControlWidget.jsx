@@ -65,6 +65,13 @@ function formatKwh(kwh) {
   return `${n.toFixed(2)} kWh`;
 }
 
+const ELECTRICITY_PRICE_PER_KWH = 0.17;
+
+function formatPrice(kwh) {
+  if (kwh == null || Number.isNaN(Number(kwh))) return null;
+  return `${(Number(kwh) * ELECTRICITY_PRICE_PER_KWH).toFixed(2)} €`;
+}
+
 export default function ClimateControlWidget({ deviceId = 'clim-mobile' }) {
   const device = useOrionStore((s) => s.devices[deviceId]);
   const powerPlug = useOrionStore((s) => {
@@ -173,7 +180,10 @@ export default function ClimateControlWidget({ deviceId = 'clim-mobile' }) {
                 )}
               </p>
               {powerPlug.hasEmeter && formatKwh(powerPlug.energyKwh) && (
-                <p className="mt-0.5 text-[10px] text-slate-500">Cumul {formatKwh(powerPlug.energyKwh)}</p>
+                <p className="mt-0.5 text-[10px] text-slate-500">
+                  Cumul {formatKwh(powerPlug.energyKwh)}
+                  {formatPrice(powerPlug.energyKwh) && <span> · ≈ {formatPrice(powerPlug.energyKwh)}</span>}
+                </p>
               )}
             </div>
           </div>
