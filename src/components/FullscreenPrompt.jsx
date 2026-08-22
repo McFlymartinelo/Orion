@@ -47,6 +47,12 @@ export default function FullscreenPrompt() {
       setVisible(false);
       return;
     }
+    // Sur un PC (pas de tactile) : ne pas bloquer tout l'écran.
+    const hasTouch = navigator.maxTouchPoints > 0 || 'ontouchstart' in window;
+    if (!hasTouch) {
+      setVisible(false);
+      return;
+    }
     setVisible(true);
   }, []);
 

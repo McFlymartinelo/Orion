@@ -8,7 +8,7 @@ import {
   LIGHT_DEVICE_TYPES,
 } from '../data/mockData';
 import { fetchNetatmoData, NetatmoUnavailableError } from '../services/netatmoApi';
-import { setHueLightState, buildHueState } from '../services/hueApi';
+import { setHueLightState, buildHueState, fetchHueScenes, recallHueScene, hueLightToPatch } from '../services/hueApi';
 import { fetchTuyaStatus, sendTuyaControl, buildTuyaPatch } from '../services/tuyaApi';
 import { fetchKasaStatuses, syncKasa } from '../services/kasaApi';
 import { fetchYeelightStatuses, syncYeelight } from '../services/yeelightApi';
@@ -47,7 +47,24 @@ function syncTuya(device, patch) {
   if (tuyaPatch) sendTuyaControl(tuyaPatch).catch(console.warn);
 }
 
-/** Applique le résultat Kasa (watts…) dans le store après un PUT. */
+function applyHueLightsToDevices(devices, lights) {
+  if (!lights || typeof lights !== 'object' || Array.isArray(lights)) return devices;
+  let next = devices;
+  let changed = false;
+  for (const device of Object.values(devices)) {
+    if (!device.hueId) continue;
+    const light = lights[String(device.hueId)];
+    const patch = hueLightToPatch(light);
+    if (!patch) continue;
+    if (!changed) {
+      next = { ...devices };
+      changed = true;
+    }
+    next[device.id] = { ...next[device.id], ...patch };
+  }
+  return next;
+}
+
 function applyKasaResult(id, patch) {
   useOrionStore.setState((state) => {
     const device = state.devices[id];
@@ -112,12 +129,65 @@ const useOrionStore = create((set, get) => ({
   // --- État des équipements ---
   devices: initialDevices,
 
-  // --- Sélection contextuelle (panneau droit) ---
-  selectedDeviceId: 'clim-mobile',
+  // --- Sélection contextuelle (overlay du panneau droit) ---
+  selectedDeviceId: null,
   activeScene: null,
 
   selectDevice: (id) => set({ selectedDeviceId: id, activeScene: null }),
   clearSelection: () => set({ selectedDeviceId: null }),
+
+  // --- Connexion Hue (scènes de l'app Philips) ---
+  hue: {
+    connected: false,
+    syncing: false,
+    error: null,
+    scenes: [],
+    lastSeen: null,
+    activeSceneId: null,
+  },
+
+  syncHueScenes: async () => {
+    set((state) => ({ hue: { ...state.hue, syncing: true } }));
+    try {
+      const data = await fetchHueScenes();
+      const scenes = Array.isArray(data.scenes) ? data.scenes : [];
+      set((state) => ({
+        hue: {
+          ...state.hue,
+          connected: true,
+          syncing: false,
+          error: null,
+          scenes,
+          lastSeen: Date.now(),
+        },
+      }));
+    } catch (err) {
+      set((state) => ({
+        hue: {
+          ...state.hue,
+          connected: false,
+          syncing: false,
+          error: err.message ?? 'Erreur Hue',
+        },
+      }));
+    }
+  },
+
+  applyHueScene: async (sceneId) => {
+    try {
+      const result = await recallHueScene(sceneId);
+      const devices = applyHueLightsToDevices(get().devices, result.lights);
+      set((state) => ({
+        devices,
+        activeScene: null,
+        hue: { ...state.hue, connected: true, error: null, activeSceneId: sceneId },
+      }));
+    } catch (err) {
+      set((state) => ({
+        hue: { ...state.hue, error: err.message ?? 'Impossible d’appliquer la scène Hue' },
+      }));
+    }
+  },
 
   // --- Connexion Tuya (clim DrPrepare) ---
   tuya: {

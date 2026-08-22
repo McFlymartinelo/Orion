@@ -8,7 +8,15 @@ import { fileURLToPath } from 'node:url';
 import express from 'express';
 import { getIndoorOutdoorTemperatures, getClimateHistory } from './netatmoClient.js';
 import { getOrionNotifications } from './notificationsService.js';
-import { getLights, setLightState, pairBridge, HueUnavailableError } from './hueClient.js';
+import {
+  getLights,
+  setLightState,
+  pairBridge,
+  listPersistentScenes,
+  recallScene,
+  getScenes,
+  HueUnavailableError,
+} from './hueClient.js';
 import {
   getDeviceStatus,
   getDeviceSpecification,
@@ -149,6 +157,37 @@ app.post('/api/hue/pair', async (_req, res) => {
   try {
     const result = await pairBridge();
     res.json(result);
+  } catch (err) {
+    const status = err instanceof HueUnavailableError ? 503 : 502;
+    console.error('[hue]', err.message);
+    res.status(status).json({ error: err.message });
+  }
+});
+
+/** GET /api/hue/scenes — scènes de l'app Hue (Relax, couleurs perso, etc.). */
+app.get('/api/hue/scenes', async (_req, res) => {
+  try {
+    const scenes = await listPersistentScenes();
+    res.json({ scenes });
+  } catch (err) {
+    const status = err instanceof HueUnavailableError ? 503 : 502;
+    console.error('[hue]', err.message);
+    res.status(status).json({ error: err.message, scenes: [] });
+  }
+});
+
+/** PUT /api/hue/scenes/:id — active une scène Hue, puis renvoie l'état des lampes. */
+app.put('/api/hue/scenes/:id', async (req, res) => {
+  try {
+    const sceneId = req.params.id;
+    const scenes = await getScenes();
+    const scene = scenes?.[sceneId];
+    if (!scene) {
+      return res.status(404).json({ error: 'Scène Hue introuvable' });
+    }
+    await recallScene(sceneId, scene.group || '0');
+    const lights = await getLights();
+    res.json({ ok: true, id: sceneId, lights });
   } catch (err) {
     const status = err instanceof HueUnavailableError ? 503 : 502;
     console.error('[hue]', err.message);

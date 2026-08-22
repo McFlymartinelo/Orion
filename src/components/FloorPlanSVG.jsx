@@ -211,20 +211,7 @@ export default function FloorPlanSVG() {
           <StaticFixture key={fixture.id} fixture={fixture} />
         ))}
 
-        {/* Équipements connectés */}
-        {deviceList.map((device) => (
-          <g
-            key={device.id}
-            transform={`translate(${device.x}, ${device.y})`}
-            onClick={() => selectDevice(device.id)}
-            className="cursor-pointer"
-            style={{ cursor: 'pointer' }}
-          >
-            <DeviceIcon device={device} selected={selectedDeviceId === device.id} />
-          </g>
-        ))}
-
-        {/* Boutons lumières par pièce (au-dessus pour rester cliquables) */}
+        {/* Boutons lumières par pièce */}
         {rooms.map((room) => (
           <RoomLightToggle
             key={`lights-${room.id}`}
@@ -232,6 +219,22 @@ export default function FloorPlanSVG() {
             lights={lightsByRoom[room.id] || []}
             onToggle={toggleRoomLights}
           />
+        ))}
+
+        {/* Équipements connectés — au-dessus pour que le tap ouvre le détail */}
+        {deviceList.map((device) => (
+          <g
+            key={device.id}
+            transform={`translate(${device.x}, ${device.y})`}
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              selectDevice(device.id);
+            }}
+            className="cursor-pointer"
+            style={{ cursor: 'pointer', pointerEvents: 'auto' }}
+          >
+            <DeviceIcon device={device} selected={selectedDeviceId === device.id} />
+          </g>
         ))}
       </svg>
     </div>

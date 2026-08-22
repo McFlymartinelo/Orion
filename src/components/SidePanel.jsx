@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import {
   LayoutGrid,
   Lightbulb,
@@ -8,7 +9,7 @@ import {
   Wind,
   Gauge,
   Volume2,
-  X,
+  ArrowLeft,
   MousePointerClick,
   TrendingUp,
   TrendingDown,
@@ -298,50 +299,57 @@ function ActiveLightsHint() {
   );
 }
 
-function ContextHeader({ device, onClose }) {
+function DeviceOverlayHeader({ device, onBack }) {
   return (
-    <div className="mb-3 flex items-center justify-between px-0.5">
-      <p className="text-[11px] uppercase tracking-wider text-slate-500">
-        {ROOM_NAMES[device.room] || 'Orion'} · Équipement sélectionné
-      </p>
+    <div className="flex shrink-0 items-center gap-3 border-b border-white/10 px-4 py-3">
       <button
         type="button"
-        onClick={onClose}
-        className="flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-400 transition hover:bg-white/10"
+        onClick={onBack}
+        className="flex h-11 items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 text-slate-100 transition hover:bg-white/10 active:scale-95"
+        aria-label="Retour"
       >
-        <X size={13} />
+        <ArrowLeft size={18} />
+        <span className="text-sm font-medium">Retour</span>
       </button>
+      <div className="min-w-0">
+        <p className="text-[11px] uppercase tracking-wider text-slate-500">
+          {ROOM_NAMES[device.room] || 'Orion'}
+        </p>
+        <h2 className="truncate text-base font-semibold text-white">{device.name}</h2>
+      </div>
     </div>
   );
 }
 
-function SelectedDevicePanel({ device, onClose }) {
-  // La clim est déjà toujours visible plus haut — pas de doublon.
-  if (device.type === DEVICE_TYPES.CLIM_MOBILE) return null;
-
-  let widget = null;
+function deviceWidget(device) {
   switch (device.type) {
+    case DEVICE_TYPES.CLIM_MOBILE:
+      return <ClimateControlWidget deviceId={device.id} />;
     case DEVICE_TYPES.TPLINK:
-      widget = <PlugControlWidget deviceId={device.id} />;
-      break;
+      return <PlugControlWidget deviceId={device.id} />;
     case DEVICE_TYPES.HUE:
     case DEVICE_TYPES.HUE_PLAY:
     case DEVICE_TYPES.YEELIGHT_STRIP:
     case DEVICE_TYPES.YEELIGHT:
-      widget = <LightControlWidget deviceId={device.id} />;
-      break;
+      return <LightControlWidget deviceId={device.id} />;
     case DEVICE_TYPES.ALEXA:
-      widget = <AssistantWidget deviceId={device.id} />;
-      break;
+      return <AssistantWidget deviceId={device.id} />;
     default:
-      return null;
+      return (
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm text-slate-400">
+          Pas de contrôle pour cet équipement.
+        </div>
+      );
   }
+}
 
-  return (
-    <div className="orion-fade-in">
-      <ContextHeader device={device} onClose={onClose} />
-      {widget}
-    </div>
+function DeviceOverlay({ device, onBack }) {
+  return createPortal(
+    <div className="orion-slide-in fixed bottom-0 right-0 top-[86px] z-50 flex w-1/2 flex-col border-l border-white/10 bg-[#07080c]">
+      <DeviceOverlayHeader device={device} onBack={onBack} />
+      <div className="orion-scroll min-h-0 flex-1 overflow-y-auto p-4">{deviceWidget(device)}</div>
+    </div>,
+    document.body
   );
 }
 
@@ -350,24 +358,17 @@ export default function SidePanel() {
   const device = useOrionStore((s) => (selectedDeviceId ? s.devices[selectedDeviceId] : null));
   const clearSelection = useOrionStore((s) => s.clearSelection);
 
-  const showDetail =
-    device && device.type !== DEVICE_TYPES.CLIM_MOBILE;
-
   return (
-    <aside className="flex h-full w-full flex-col border-l border-white/10 bg-white/[0.02] backdrop-blur-md">
-      <div className="orion-scroll flex-1 space-y-3 overflow-y-auto p-4">
+    <aside className="relative flex h-full min-h-0 w-full flex-col border-l border-white/10 bg-white/[0.02] backdrop-blur-md">
+      <div className="orion-scroll min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
         <SummaryStrip />
         <NetatmoCard />
-
         <ClimateControlWidget deviceId="clim-mobile" />
-
-        {showDetail ? (
-          <SelectedDevicePanel device={device} onClose={clearSelection} />
-        ) : (
-          <ActiveLightsHint />
-        )}
+        <ActiveLightsHint />
       </div>
       <SceneBar />
+
+      {device && <DeviceOverlay device={device} onBack={clearSelection} />}
     </aside>
   );
 }

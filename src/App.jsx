@@ -17,6 +17,7 @@ export default function App() {
   const syncKasaStatus = useOrionStore((s) => s.syncKasaStatus);
   const syncYeelightStatus = useOrionStore((s) => s.syncYeelightStatus);
   const syncAlexaStatus = useOrionStore((s) => s.syncAlexaStatus);
+  const syncHueScenes = useOrionStore((s) => s.syncHueScenes);
 
   useEffect(() => {
     syncNetatmo();
@@ -65,6 +66,12 @@ export default function App() {
     return () => clearInterval(id);
   }, [syncAlexaStatus]);
 
+  useEffect(() => {
+    syncHueScenes();
+    const id = setInterval(syncHueScenes, 5 * 60 * 1000);
+    return () => clearInterval(id);
+  }, [syncHueScenes]);
+
   return (
     <div className="relative flex h-dvh w-full flex-col overflow-hidden bg-[#050608] text-slate-100">
       <FullscreenPrompt />
@@ -84,7 +91,7 @@ export default function App() {
           </div>
         </section>
 
-        <section className="min-h-0 w-1/2">
+        <section className="relative flex min-h-0 w-1/2 flex-col overflow-hidden">
           <SidePanel />
         </section>
       </main>
