@@ -132,9 +132,11 @@ const useOrionStore = create((set, get) => ({
   // --- Sélection contextuelle (overlay du panneau droit) ---
   selectedDeviceId: null,
   activeScene: null,
+  floorPlanMode: '2d',
 
   selectDevice: (id) => set({ selectedDeviceId: id, activeScene: null }),
   clearSelection: () => set({ selectedDeviceId: null }),
+  setFloorPlanMode: (mode) => set({ floorPlanMode: mode }),
 
   // --- Connexion Hue (scènes de l'app Philips) ---
   hue: {

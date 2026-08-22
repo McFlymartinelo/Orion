@@ -1,9 +1,12 @@
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import Header from './components/Header';
 import FloorPlanSVG from './components/FloorPlanSVG';
+import FloorPlanModeToggle from './components/FloorPlanModeToggle';
 import SidePanel from './components/SidePanel';
 import FullscreenPrompt from './components/FullscreenPrompt';
 import useOrionStore from './store/useOrionStore';
+
+const FloorPlan3D = lazy(() => import('./components/FloorPlan3D'));
 
 const NETATMO_POLL_INTERVAL_MS = 5 * 60 * 1000; // Netatmo ne rafraîchit ses capteurs que toutes les ~5-10 min
 const TUYA_POLL_INTERVAL_MS = 2 * 60 * 1000; // état clim Tuya (éviter le rate-limit 412)
@@ -12,6 +15,7 @@ const YEELIGHT_POLL_INTERVAL_MS = 2 * 60 * 1000; // rubans Yeelight (connexion p
 const ALEXA_POLL_INTERVAL_MS = 2 * 60 * 1000; // Echo (volume / DND via API Amazon)
 
 export default function App() {
+  const floorPlanMode = useOrionStore((s) => s.floorPlanMode);
   const syncNetatmo = useOrionStore((s) => s.syncNetatmo);
   const syncTuyaStatus = useOrionStore((s) => s.syncTuyaStatus);
   const syncKasaStatus = useOrionStore((s) => s.syncKasaStatus);
@@ -86,8 +90,21 @@ export default function App() {
 
       <main className="flex min-h-0 flex-1">
         <section className="relative min-h-0 w-1/2 p-4 pr-2">
-          <div className="h-full w-full rounded-2xl border border-white/10 bg-white/[0.02] p-3 backdrop-blur-md">
-            <FloorPlanSVG />
+          <div className="relative h-full w-full overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] p-3 backdrop-blur-md">
+            <FloorPlanModeToggle />
+            {floorPlanMode === '3d' ? (
+              <Suspense
+                fallback={
+                  <div className="flex h-full items-center justify-center text-sm text-slate-400">
+                    Préparation de la vue 3D…
+                  </div>
+                }
+              >
+                <FloorPlan3D />
+              </Suspense>
+            ) : (
+              <FloorPlanSVG />
+            )}
           </div>
         </section>
 

@@ -31,3 +31,7 @@ server/.alexa-cookie.json
 *.sw?
 
 dev-dist/
+
+# Export Sweet Home 3D brut (~90 Mo) — rester local
+public/models/appart/*.obj
+public/models/appart/*.glb

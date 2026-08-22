@@ -14,3 +14,4 @@ server/.alexa-cookie.json
 .idea
 *.md
 .DS_Store
+public/models/appart/*.obj
