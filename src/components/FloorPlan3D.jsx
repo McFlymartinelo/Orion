@@ -119,14 +119,18 @@ function toStandardMaterial(mat) {
  * Hue Play TV / Alexa Salon : plateau du meuble TV (y≈0.55, z≈12–18).
  * Yeelight TV : bord supérieur de l'écran mural (y≈1.72).
  * Prise Verres : coin nord-est du séjour. Clim mobile : dans la pièce, à l'ouest de la TV.
+ * Lumière cuisine : globe du lustre/suspension (x≈184, z≈455, y≈0.92).
+ * Yeelight séjour : ruban au-dessus du canapé salon (x≈207, z≈300).
+ * Plafonniers entrée / dégagement : centres de pièce.
+ * Alexa Cuisine : plan de travail. Alexa Chambre : table de chevet. Alexa SDB : près du lave-linge.
  * Hue Play Bureau : lampes de table du bureau (z≈799.5), de part et d'autre du moniteur.
  * Alexa Bureau : milieu du plateau, devant l'écran.
  */
 const SNAP_3D_CM = {
   // ── Plafonniers ──────────────────────────────────────────────────────────
-  'hue-cuisine':    { x: 200,   z: 490,    y: 1.95 },
-  'hue-entree':     { x: 380,   z: 445,    y: 1.95 },
-  'hue-degagement': { x: 400,   z: 670,    y: 1.95 },
+  'hue-cuisine':    { x: 183.7, z: 455.2,  y: 0.92 },
+  'hue-entree':     { x: 470,   z: 450,    y: 1.95 },
+  'hue-degagement': { x: 422,   z: 685,    y: 1.95 },
   'hue-bureau':     { x: 179,   z: 667.8,  y: 1.95 },
   'hue-chambre-1':  { x: 175.5, z: 939.5,  y: 2.15 },
   'hue-wc':         { x: 522.8, z: 783.9,  y: 1.95 },
@@ -136,9 +140,14 @@ const SNAP_3D_CM = {
   'hueplay-tv-droite': { x: 292, z: 12, y: 0.55 },
   'alexa-salon':       { x: 216, z: 18, y: 0.55 },
   'yeelight-tv':       { x: 213, z: -4, y: 1.72 },
+  'yeelight-sejour':    { x: 207, z: 300, y: 1.15 },
   // ── Coins séjour ────────────────────────────────────────────────────────
   'tplink-verres': { x: 548, z: 22, y: 0.40 },
   'clim-mobile':   { x:  58, z: 28, y: 0.40 },
+  // ── Cuisine / chambre / SDB : Alexa posées ──────────────────────────────
+  'alexa-cuisine': { x: 220, z: 400, y: 0.82 },
+  'alexa-chambre': { x:  22, z: 1091, y: 0.55 },
+  'alexa-sdb':     { x: 400, z: 1070, y: 0.90 },
   // ── Bureau : lampes de table + Alexa au centre du plateau ───────────────
   'hueplay-bureau-gauche': { x: 112.0, z: 799.5, y: 0.86 },
   'hueplay-bureau-droite': { x: 203.6, z: 799.5, y: 0.86 },
