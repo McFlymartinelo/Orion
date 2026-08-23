@@ -48,11 +48,16 @@ export default defineConfig({
       workbox: {
         // Ne pas mettre en cache les appels API (toujours frais)
         navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api\//, /^\/models\//],
         globIgnores: ['**/models/**'],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         runtimeCaching: [
           {
             urlPattern: ({ url }) => url.pathname.startsWith('/api/'),
+            handler: 'NetworkOnly',
+          },
+          {
+            urlPattern: ({ url }) => url.pathname.startsWith('/models/'),
             handler: 'NetworkOnly',
           },
         ],

@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect } from 'react';
 import Header from './components/Header';
 import FloorPlanSVG from './components/FloorPlanSVG';
 import FloorPlanModeToggle from './components/FloorPlanModeToggle';
+import FloorPlan3DBoundary from './components/FloorPlan3DBoundary';
 import SidePanel from './components/SidePanel';
 import FullscreenPrompt from './components/FullscreenPrompt';
 import useOrionStore from './store/useOrionStore';
@@ -93,15 +94,17 @@ export default function App() {
           <div className="relative h-full w-full overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] p-3 backdrop-blur-md">
             <FloorPlanModeToggle />
             {floorPlanMode === '3d' ? (
-              <Suspense
-                fallback={
-                  <div className="flex h-full items-center justify-center text-sm text-slate-400">
-                    Préparation de la vue 3D…
-                  </div>
-                }
-              >
-                <FloorPlan3D />
-              </Suspense>
+              <FloorPlan3DBoundary>
+                <Suspense
+                  fallback={
+                    <div className="flex h-full items-center justify-center text-sm text-slate-400">
+                      Préparation de la vue 3D…
+                    </div>
+                  }
+                >
+                  <FloorPlan3D />
+                </Suspense>
+              </FloorPlan3DBoundary>
             ) : (
               <FloorPlanSVG />
             )}

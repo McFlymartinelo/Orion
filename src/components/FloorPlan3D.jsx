@@ -56,7 +56,7 @@ function prepareApartment(root) {
   const size = box.getSize(new THREE.Vector3());
 
   root.traverse((child) => {
-    if (!child.isMesh) return;
+    if (!child.isMesh || !child.geometry) return;
 
     const meshBox = new THREE.Box3().setFromObject(child);
     const thick = meshBox.max.y - meshBox.min.y;
@@ -88,10 +88,11 @@ function prepareApartment(root) {
 function toStandardMaterial(mat) {
   if (!mat) return mat;
   if (mat.isMeshStandardMaterial || mat.isMeshPhysicalMaterial) {
-    mat.side = THREE.DoubleSide;
-    mat.envMapIntensity = 0.55;
-    if (mat.map) mat.map.colorSpace = THREE.SRGBColorSpace;
-    return mat;
+    const next = mat.clone();
+    next.side = THREE.DoubleSide;
+    next.envMapIntensity = 0.55;
+    if (next.map) next.map.colorSpace = THREE.SRGBColorSpace;
+    return next;
   }
   const specular = mat.specular?.r ?? 0;
   const std = new THREE.MeshStandardMaterial({
@@ -115,9 +116,11 @@ function toStandardMaterial(mat) {
  * y = hauteur en mètres dans le repère world (après scale CM_TO_M).
  * Les plafonniers visent ~1.95 m ; le lustre salon est à 2.15 m (plus haut).
  *
- * Hue Play TV  : calés sur le mur TV (mur nord du salon, z≈61).
- *   x interpolé depuis les 5 globes du lustre salon (référentiel SH3D mesuré).
- * Hue Play Bureau : collés au mur nord du bureau (z≈585), de part et d'autre du moniteur.
+ * Hue Play TV / Alexa Salon : plateau du meuble TV (y≈0.55, z≈12–18).
+ * Yeelight TV : bord supérieur de l'écran mural (y≈1.72).
+ * Prise Verres : coin nord-est du séjour. Clim mobile : dans la pièce, à l'ouest de la TV.
+ * Hue Play Bureau : lampes de table du bureau (z≈799.5), de part et d'autre du moniteur.
+ * Alexa Bureau : milieu du plateau, devant l'écran.
  */
 const SNAP_3D_CM = {
   // ── Plafonniers ──────────────────────────────────────────────────────────
@@ -128,12 +131,18 @@ const SNAP_3D_CM = {
   'hue-chambre-1':  { x: 175.5, z: 939.5,  y: 2.15 },
   'hue-wc':         { x: 522.8, z: 783.9,  y: 1.95 },
   'yeelight-sdb':   { x: 456,   z: 1029.1, y: 1.95 },
-  // ── Hue Play TV (mur nord du salon, de part et d'autre de la TV) ─────────
-  'hueplay-tv-gauche': { x: 246, z: 61, y: 0.90 },
-  'hueplay-tv-droite': { x: 318, z: 61, y: 0.90 },
-  // ── Hue Play Bureau (mur nord du bureau, de part et d'autre du moniteur) ─
-  'hueplay-bureau-gauche': { x: 155, z: 585, y: 0.80 },
-  'hueplay-bureau-droite': { x: 200, z: 585, y: 0.80 },
+  // ── Meuble TV (stand x=126–306, z=-17–28, plateau 51 cm ; écran y=100–166) ─
+  'hueplay-tv-gauche': { x: 140, z: 12, y: 0.55 },
+  'hueplay-tv-droite': { x: 292, z: 12, y: 0.55 },
+  'alexa-salon':       { x: 216, z: 18, y: 0.55 },
+  'yeelight-tv':       { x: 213, z: -4, y: 1.72 },
+  // ── Coins séjour ────────────────────────────────────────────────────────
+  'tplink-verres': { x: 548, z: 22, y: 0.40 },
+  'clim-mobile':   { x:  58, z: 28, y: 0.40 },
+  // ── Bureau : lampes de table + Alexa au centre du plateau ───────────────
+  'hueplay-bureau-gauche': { x: 112.0, z: 799.5, y: 0.86 },
+  'hueplay-bureau-droite': { x: 203.6, z: 799.5, y: 0.86 },
+  'alexa-bureau':          { x: 157.8, z: 770.0, y: 0.78 },
 };
 
 function svgToWorld(sx, sy, map, deviceType) {
@@ -183,19 +192,18 @@ function devicePlanPos(device) {
 
 function ApartmentModel({ onMapped }) {
   const { scene } = useGLTF(GLB_URL);
+  const { root, map } = useMemo(() => {
+    const cloned = scene.clone(true);
+    return { root: cloned, map: prepareApartment(cloned) };
+  }, [scene]);
 
   useLayoutEffect(() => {
-    if (!scene) return;
-    if (!scene.userData.orionPrepared) {
-      scene.userData.orionMap = prepareApartment(scene);
-      scene.userData.orionPrepared = true;
-    }
-    onMapped(scene.userData.orionMap);
-  }, [scene, onMapped]);
+    onMapped(map);
+  }, [map, onMapped]);
 
   return (
     <group scale={CM_TO_M}>
-      <primitive object={scene} />
+      <primitive object={root} />
     </group>
   );
 }
@@ -252,9 +260,10 @@ function HomeLights({ map }) {
 
   const lights = useMemo(() => {
     if (!map) return [];
-    return Object.values(devices).filter(
-      (d) => LIGHT_DEVICE_TYPES.has(d.type) && d.on && d.x != null && d.y != null
-    );
+    return Object.values(devices)
+      .filter((d) => LIGHT_DEVICE_TYPES.has(d.type) && d.on && d.x != null && d.y != null)
+      .sort((a, b) => (b.brightness ?? 60) - (a.brightness ?? 60))
+      .slice(0, 8);
   }, [devices, map]);
 
   return lights.map((device) => {
@@ -319,8 +328,8 @@ export default function FloorPlan3D() {
     <div className="relative h-full w-full touch-none">
       <Canvas
         shadows
-        dpr={[1, 1.5]}
-        gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, powerPreference: 'high-performance' }}
+        dpr={[1, 1.25]}
+        gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, powerPreference: 'default' }}
         camera={{ fov: 38, near: 0.1, far: 80, position: [8, 9, 8] }}
         onCreated={({ gl }) => {
           gl.toneMappingExposure = 1.05;
@@ -334,8 +343,8 @@ export default function FloorPlan3D() {
           intensity={0.85}
           color="#f3e7d3"
           castShadow
-          shadow-mapSize-width={1024}
-          shadow-mapSize-height={1024}
+          shadow-mapSize-width={512}
+          shadow-mapSize-height={512}
         />
 
         <Suspense fallback={<LoaderOverlay />}>
@@ -347,6 +356,7 @@ export default function FloorPlan3D() {
               <FitCamera map={map} />
             </>
           )}
+          <Environment preset="city" environmentIntensity={0.35} />
         </Suspense>
 
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
@@ -354,7 +364,6 @@ export default function FloorPlan3D() {
           <meshStandardMaterial color="#07080c" roughness={0.92} metalness={0.08} />
         </mesh>
         <ContactShadows position={[0, 0, 0]} opacity={0.45} scale={18} blur={2.4} far={6} />
-        <Environment preset="city" environmentIntensity={0.35} />
 
         <OrbitControls
           makeDefault
