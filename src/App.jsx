@@ -14,6 +14,7 @@ const TUYA_POLL_INTERVAL_MS = 2 * 60 * 1000; // état clim Tuya (éviter le rate
 const KASA_POLL_INTERVAL_MS = 30 * 1000; // prises Kasa locales (on + watts)
 const YEELIGHT_POLL_INTERVAL_MS = 2 * 60 * 1000; // rubans Yeelight (connexion persistante côté serveur)
 const ALEXA_POLL_INTERVAL_MS = 2 * 60 * 1000; // Echo (volume / DND via API Amazon)
+const HUE_POLL_INTERVAL_MS = 30 * 1000; // état réel des lampes Hue (bridge local)
 
 export default function App() {
   const floorPlanMode = useOrionStore((s) => s.floorPlanMode);
@@ -22,6 +23,7 @@ export default function App() {
   const syncKasaStatus = useOrionStore((s) => s.syncKasaStatus);
   const syncYeelightStatus = useOrionStore((s) => s.syncYeelightStatus);
   const syncAlexaStatus = useOrionStore((s) => s.syncAlexaStatus);
+  const syncHueStatus = useOrionStore((s) => s.syncHueStatus);
   const syncHueScenes = useOrionStore((s) => s.syncHueScenes);
 
   useEffect(() => {
@@ -70,6 +72,12 @@ export default function App() {
     const id = setInterval(syncAlexaStatus, ALEXA_POLL_INTERVAL_MS);
     return () => clearInterval(id);
   }, [syncAlexaStatus]);
+
+  useEffect(() => {
+    syncHueStatus();
+    const id = setInterval(syncHueStatus, HUE_POLL_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [syncHueStatus]);
 
   useEffect(() => {
     syncHueScenes();

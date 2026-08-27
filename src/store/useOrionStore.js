@@ -8,7 +8,7 @@ import {
   LIGHT_DEVICE_TYPES,
 } from '../data/mockData';
 import { fetchNetatmoData, NetatmoUnavailableError } from '../services/netatmoApi';
-import { setHueLightState, buildHueState, fetchHueScenes, recallHueScene, hueLightToPatch } from '../services/hueApi';
+import { setHueLightState, buildHueState, fetchHueLights, fetchHueScenes, recallHueScene, hueLightToPatch } from '../services/hueApi';
 import { fetchTuyaStatus, sendTuyaControl, buildTuyaPatch } from '../services/tuyaApi';
 import { fetchKasaStatuses, syncKasa } from '../services/kasaApi';
 import { fetchYeelightStatuses, syncYeelight } from '../services/yeelightApi';
@@ -146,6 +146,34 @@ const useOrionStore = create((set, get) => ({
     scenes: [],
     lastSeen: null,
     activeSceneId: null,
+  },
+
+  /** Récupère l'état réel des lampes Hue et écrase les valeurs mock du store. */
+  syncHueStatus: async () => {
+    set((state) => ({ hue: { ...state.hue, syncing: true } }));
+    try {
+      const lights = await fetchHueLights();
+      const devices = applyHueLightsToDevices(get().devices, lights);
+      set((state) => ({
+        devices,
+        hue: {
+          ...state.hue,
+          connected: true,
+          syncing: false,
+          error: null,
+          lastSeen: Date.now(),
+        },
+      }));
+    } catch (err) {
+      set((state) => ({
+        hue: {
+          ...state.hue,
+          connected: false,
+          syncing: false,
+          error: err.message ?? 'Erreur Hue',
+        },
+      }));
+    }
   },
 
   syncHueScenes: async () => {

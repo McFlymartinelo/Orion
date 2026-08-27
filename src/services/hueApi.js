@@ -36,6 +36,11 @@ export function setHueLightState(hueId, state) {
   return put(`/api/hue/lights/${hueId}`, state);
 }
 
+/** État réel de tous les luminaires du bridge : { "1": { state: { on, bri, … } }, … } */
+export function fetchHueLights() {
+  return request('GET', '/api/hue/lights');
+}
+
 export function fetchHueScenes() {
   return request('GET', '/api/hue/scenes');
 }

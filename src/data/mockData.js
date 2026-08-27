@@ -86,12 +86,12 @@ export const initialDevices = {
   // yeelightId: true = pilotée via LAN (YEELIGHT_DEVICES=… dans .env). Activer « Contrôle LAN » dans l'app Yeelight.
   'yeelight-tv': {
     id: 'yeelight-tv', name: 'Yeelight TV (LED TV)', type: DEVICE_TYPES.YEELIGHT_STRIP, room: 'sejour',
-    x: 390, y: 32, orientation: 'horizontal', length: 120, on: true, brightness: 55, color: '#facc15',
+    x: 390, y: 32, orientation: 'horizontal', length: 120, on: false, brightness: 55, color: '#facc15',
     yeelightId: true,
   },
   'hueplay-tv-gauche': {
     id: 'hueplay-tv-gauche', name: 'Hue Play TV Gauche', type: DEVICE_TYPES.HUE_PLAY, room: 'sejour',
-    x: 340, y: 60, on: true, brightness: 70, color: '#dc2626', hueId: 20,
+    x: 340, y: 60, on: false, brightness: 70, color: '#dc2626', hueId: 20,
   },
   // alexaId: true = pilotée via Amazon (ALEXA_DEVICES=… dans .env après npm run alexa:auth)
   'alexa-salon': {
@@ -101,7 +101,7 @@ export const initialDevices = {
   },
   'hueplay-tv-droite': {
     id: 'hueplay-tv-droite', name: 'Hue Play TV Droite', type: DEVICE_TYPES.HUE_PLAY, room: 'sejour',
-    x: 440, y: 60, on: true, brightness: 70, color: '#dc2626', hueId: 21,
+    x: 440, y: 60, on: false, brightness: 70, color: '#dc2626', hueId: 21,
   },
 
   // ---- Séjour : climatisation (côté balcon, mur ouest du séjour à x=130) ----
@@ -125,11 +125,11 @@ export const initialDevices = {
   // ---- Séjour : éclairage Salon (orange) + Salle à manger (vert) — rangée centrale ----
   'hue-salon-1': {
     id: 'hue-salon-1', name: 'Lumière Salon 1', type: DEVICE_TYPES.HUE, room: 'sejour',
-    x: 260, y: 205, on: true, brightness: 65, color: '#ffb877', kelvin: 2700, hueId: 10,
+    x: 260, y: 205, on: false, brightness: 65, color: '#ffb877', kelvin: 2700, hueId: 10,
   },
   'hue-salon-2': {
     id: 'hue-salon-2', name: 'Lumière Salon 2', type: DEVICE_TYPES.HUE, room: 'sejour',
-    x: 313, y: 205, on: true, brightness: 65, color: '#ffb877', kelvin: 2700, hueId: 11,
+    x: 313, y: 205, on: false, brightness: 65, color: '#ffb877', kelvin: 2700, hueId: 11,
   },
   'hue-sam-3': {
     id: 'hue-sam-3', name: 'Lumière Salle à manger 3', type: DEVICE_TYPES.HUE, room: 'sejour',
@@ -204,7 +204,7 @@ export const initialDevices = {
   // Rangée en bas de Chambre 2 (pièce y=460..620)
   'hueplay-bureau-gauche': {
     id: 'hueplay-bureau-gauche', name: 'Hue Play Bureau Gauche', type: DEVICE_TYPES.HUE_PLAY, room: 'chambre2',
-    x: 230, y: 600, on: true, brightness: 60, color: '#7f1d1d', hueId: 16,
+    x: 230, y: 600, on: false, brightness: 60, color: '#7f1d1d', hueId: 16,
   },
   'alexa-bureau': {
     id: 'alexa-bureau', name: 'Alexa Bureau', type: DEVICE_TYPES.ALEXA, room: 'chambre2',
@@ -213,7 +213,7 @@ export const initialDevices = {
   },
   'hueplay-bureau-droite': {
     id: 'hueplay-bureau-droite', name: 'Hue Play Bureau Droite', type: DEVICE_TYPES.HUE_PLAY, room: 'chambre2',
-    x: 335, y: 600, on: true, brightness: 60, color: '#7f1d1d', hueId: 19,
+    x: 335, y: 600, on: false, brightness: 60, color: '#7f1d1d', hueId: 19,
   },
 
   // ---- Chambre 1 ----
