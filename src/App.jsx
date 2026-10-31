@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect } from 'react';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
+import RoomsPage from './components/RoomsPage';
 import FullscreenPrompt from './components/FullscreenPrompt';
 import useOrionStore from './store/useOrionStore';
 import useLayoutStore from './store/useLayoutStore';
@@ -14,6 +15,7 @@ const HUE_POLL_INTERVAL_MS = 30 * 1000; // état réel des lampes Hue (bridge lo
 
 export default function App() {
   const theme = useLayoutStore((s) => s.theme);
+  const page = useLayoutStore((s) => s.page);
   const syncNetatmo = useOrionStore((s) => s.syncNetatmo);
   const syncTuyaStatus = useOrionStore((s) => s.syncTuyaStatus);
   const syncKasaStatus = useOrionStore((s) => s.syncKasaStatus);
@@ -99,7 +101,7 @@ export default function App() {
       {/* Cadre tablette 10″ : 1280 × 800 maximum, sans défilement de page */}
       <div className="orion-frame relative flex h-[min(800px,100dvh)] w-[min(1280px,100vw)] flex-col overflow-hidden">
         <Header />
-        <Dashboard />
+        {page === 'rooms' ? <RoomsPage /> : <Dashboard />}
       </div>
     </div>
   );

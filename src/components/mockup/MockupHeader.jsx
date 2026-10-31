@@ -3,7 +3,13 @@ import { Check, Settings } from 'lucide-react';
 import useOrionStore from '../../store/useOrionStore';
 import useLayoutStore, { THEMES } from '../../store/useLayoutStore';
 
-const TABS = ['Maison', 'Pièces', 'Énergie', 'Réseau'];
+// Maison et Pièces ouvrent une vraie page ; Énergie et Réseau restent des aperçus.
+const TABS = [
+  { name: 'Maison', page: 'home' },
+  { name: 'Pièces', page: 'rooms' },
+  { name: 'Énergie', page: null },
+  { name: 'Réseau', page: null },
+];
 
 const DATE_FORMATTER = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 const TIME_FORMATTER = new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' });
@@ -29,7 +35,8 @@ export default function MockupHeader() {
   );
   const theme = useLayoutStore((s) => s.theme);
   const setTheme = useLayoutStore((s) => s.setTheme);
-  const [tab, setTab] = useState('Maison');
+  const page = useLayoutStore((s) => s.page);
+  const setPage = useLayoutStore((s) => s.setPage);
   const [note, setNote] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   const noteTimer = useRef(null);
@@ -45,8 +52,11 @@ export default function MockupHeader() {
     return () => document.removeEventListener('pointerdown', close);
   }, [menuOpen]);
 
-  const pick = (name) => {
-    setTab(name);
+  const pick = ({ name, page: target }) => {
+    if (target) {
+      setPage(target);
+      return;
+    }
     setNote(`Vue « ${name} » (aperçu)`);
     clearTimeout(noteTimer.current);
     noteTimer.current = setTimeout(() => setNote(''), 1900);
@@ -70,15 +80,16 @@ export default function MockupHeader() {
       </div>
 
       <nav className="flex h-full items-center gap-1">
-        {TABS.map((name) => (
+        {TABS.map((tab) => (
           <button
-            key={name}
+            key={tab.name}
             type="button"
-            onClick={() => pick(name)}
-            className={`relative h-full px-3.5 text-xs ${tab === name ? 'text-white' : 'text-[#a8aac3] hover:text-white'}`}
+            onClick={() => pick(tab)}
+            aria-current={page === tab.page ? 'page' : undefined}
+            className={`relative h-full px-3.5 text-xs ${page === tab.page ? 'text-white' : 'text-[#a8aac3] hover:text-white'}`}
           >
-            {name}
-            {tab === name && (
+            {tab.name}
+            {page === tab.page && (
               <span className="absolute bottom-0 left-[13px] right-[13px] h-0.5 bg-gradient-to-r from-[#4ecbff] to-[#ff4eaa] shadow-[0_0_10px_#e245c9]" />
             )}
           </button>

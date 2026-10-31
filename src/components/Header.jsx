@@ -37,6 +37,8 @@ export default function Header() {
   const netatmo = useOrionStore((s) => s.netatmo);
   const theme = useLayoutStore((s) => s.theme);
   const setTheme = useLayoutStore((s) => s.setTheme);
+  const page = useLayoutStore((s) => s.page);
+  const setPage = useLayoutStore((s) => s.setPage);
 
   if (theme === 'mockup') return <MockupHeader />;
 
@@ -60,6 +62,26 @@ export default function Header() {
           </p>
         </div>
       </div>
+
+      <nav className="ml-8 mr-auto flex h-full items-stretch gap-1" aria-label="Pages">
+        {[
+          ['home', 'Maison'],
+          ['rooms', 'Pièces'],
+        ].map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => setPage(id)}
+            aria-current={page === id ? 'page' : undefined}
+            className={`relative px-4 text-xs font-medium transition ${
+              page === id ? 'text-white' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            {label}
+            {page === id && <span className="absolute inset-x-3 bottom-0 h-0.5 bg-sky-400 shadow-[0_0_10px_rgba(56,189,248,0.7)]" />}
+          </button>
+        ))}
+      </nav>
 
       <div className="flex items-center gap-6">
         <div
