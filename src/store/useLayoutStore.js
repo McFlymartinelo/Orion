@@ -4,6 +4,7 @@ import { DEFAULT_WIDGETS, WIDGET_TYPES } from '../data/widgetCatalog';
 
 export const DEFAULT_HERO_FRAC = 0.56;
 export const DEFAULT_THEME = 'mockup';
+export const PAGES = ['home', 'rooms', 'energy'];
 export const THEMES = [
   { id: 'orion', label: 'Classique' },
   { id: 'mockup', label: 'Maquette' },
@@ -40,10 +41,10 @@ const useLayoutStore = create(
       widgets: DEFAULT_WIDGETS,
       heroFrac: DEFAULT_HERO_FRAC,
       theme: DEFAULT_THEME,
-      // Page affichée ('home' | 'rooms') : volontairement hors persistance, on démarre sur la maison.
+      // Page affichée ('home' | 'rooms' | 'energy') : volontairement hors persistance, on démarre sur la maison.
       page: 'home',
 
-      setPage: (page) => set({ page: page === 'rooms' ? 'rooms' : 'home' }),
+      setPage: (page) => set({ page: PAGES.includes(page) ? page : 'home' }),
       setTheme: (theme) => set({ theme: THEMES.some((t) => t.id === theme) ? theme : DEFAULT_THEME }),
       addWidget: (widget) => set((s) => ({ widgets: [...s.widgets, widget] })),
       removeWidget: (id) => set((s) => ({ widgets: s.widgets.filter((w) => w.id !== id) })),

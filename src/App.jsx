@@ -2,9 +2,12 @@ import { useEffect, useLayoutEffect } from 'react';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
 import RoomsPage from './components/RoomsPage';
+import EnergyPage from './components/EnergyPage';
 import FullscreenPrompt from './components/FullscreenPrompt';
 import useOrionStore from './store/useOrionStore';
 import useLayoutStore from './store/useLayoutStore';
+import useEnergyStore from './store/useEnergyStore';
+import { measuredWatts } from './data/energy';
 
 const NETATMO_POLL_INTERVAL_MS = 5 * 60 * 1000; // Netatmo ne rafraîchit ses capteurs que toutes les ~5-10 min
 const TUYA_POLL_INTERVAL_MS = 2 * 60 * 1000; // état clim Tuya (éviter le rate-limit 412)
@@ -12,6 +15,8 @@ const KASA_POLL_INTERVAL_MS = 30 * 1000; // prises Kasa locales (on + watts)
 const YEELIGHT_POLL_INTERVAL_MS = 2 * 60 * 1000; // rubans Yeelight (connexion persistante côté serveur)
 const ALEXA_POLL_INTERVAL_MS = 2 * 60 * 1000; // Echo (volume / DND via API Amazon)
 const HUE_POLL_INTERVAL_MS = 30 * 1000; // état réel des lampes Hue (bridge local)
+const ENERGY_SAMPLE_INTERVAL_MS = 30 * 1000; // relevé de l'historique de puissance (page Énergie)
+const ENERGY_FIRST_SAMPLE_DELAY_MS = 8 * 1000; // laisse le temps à la 1re synchro Kasa
 
 export default function App() {
   const theme = useLayoutStore((s) => s.theme);
@@ -64,6 +69,21 @@ export default function App() {
     return () => clearInterval(id);
   }, [syncKasaStatus]);
 
+  // Historique de puissance : relevé tant que l'appli tourne. On n'enregistre rien tant que les
+  // prises Kasa ne répondent pas (les valeurs affichées seraient simulées, pas mesurées).
+  useEffect(() => {
+    const sample = () => {
+      const { devices, kasa } = useOrionStore.getState();
+      if (kasa.connected) useEnergyStore.getState().addSample(Date.now(), measuredWatts(devices));
+    };
+    const first = setTimeout(sample, ENERGY_FIRST_SAMPLE_DELAY_MS);
+    const id = setInterval(sample, ENERGY_SAMPLE_INTERVAL_MS);
+    return () => {
+      clearTimeout(first);
+      clearInterval(id);
+    };
+  }, []);
+
   useEffect(() => {
     syncYeelightStatus();
     const id = setInterval(syncYeelightStatus, YEELIGHT_POLL_INTERVAL_MS);
@@ -101,7 +121,7 @@ export default function App() {
       {/* Cadre tablette 10″ : 1280 × 800 maximum, sans défilement de page */}
       <div className="orion-frame relative flex h-[min(800px,100dvh)] w-[min(1280px,100vw)] flex-col overflow-hidden">
         <Header />
-        {page === 'rooms' ? <RoomsPage /> : <Dashboard />}
+        {page === 'rooms' ? <RoomsPage /> : page === 'energy' ? <EnergyPage /> : <Dashboard />}
       </div>
     </div>
   );

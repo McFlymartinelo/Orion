@@ -3,11 +3,11 @@ import { Check, Settings } from 'lucide-react';
 import useOrionStore from '../../store/useOrionStore';
 import useLayoutStore, { THEMES } from '../../store/useLayoutStore';
 
-// Maison et Pièces ouvrent une vraie page ; Énergie et Réseau restent des aperçus.
+// Maison, Pièces et Énergie ouvrent une vraie page ; Réseau reste un aperçu.
 const TABS = [
   { name: 'Maison', page: 'home' },
   { name: 'Pièces', page: 'rooms' },
-  { name: 'Énergie', page: null },
+  { name: 'Énergie', page: 'energy' },
   { name: 'Réseau', page: null },
 ];
 

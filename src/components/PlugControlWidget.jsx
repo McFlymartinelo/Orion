@@ -1,6 +1,7 @@
 import { Plug, Power, Zap } from 'lucide-react';
 import useOrionStore from '../store/useOrionStore';
 import { DEVICE_TYPES } from '../store/useOrionStore';
+import { ELECTRICITY_PRICE_PER_KWH } from '../data/energy';
 
 function formatWatts(watts) {
   if (watts == null || Number.isNaN(Number(watts))) return '—';
@@ -15,8 +16,6 @@ function formatKwh(kwh) {
   if (n >= 100) return `${Math.round(n)} kWh`;
   return `${n.toFixed(2)} kWh`;
 }
-
-const ELECTRICITY_PRICE_PER_KWH = 0.17;
 
 function formatPrice(kwh) {
   if (kwh == null || Number.isNaN(Number(kwh))) return null;

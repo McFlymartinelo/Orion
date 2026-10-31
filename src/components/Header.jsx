@@ -67,6 +67,7 @@ export default function Header() {
         {[
           ['home', 'Maison'],
           ['rooms', 'Pièces'],
+          ['energy', 'Énergie'],
         ].map(([id, label]) => (
           <button
             key={id}
