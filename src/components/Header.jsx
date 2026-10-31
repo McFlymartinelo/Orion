@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Cloud, CloudRain, CloudSun, Home, Moon, Thermometer } from 'lucide-react';
+import { Cloud, CloudRain, CloudSun, Home, Moon, Palette, Thermometer } from 'lucide-react';
 import useOrionStore from '../store/useOrionStore';
+import useLayoutStore, { THEMES } from '../store/useLayoutStore';
+import MockupHeader from './mockup/MockupHeader';
 import { APARTMENT_NAME, APARTMENT_REF } from '../data/mockData';
 
 const WEATHER_ICONS = {
@@ -33,6 +35,10 @@ export default function Header() {
   const now = useClock();
   const outdoorCondition = useOrionStore((s) => s.outdoorCondition);
   const netatmo = useOrionStore((s) => s.netatmo);
+  const theme = useLayoutStore((s) => s.theme);
+  const setTheme = useLayoutStore((s) => s.setTheme);
+
+  if (theme === 'mockup') return <MockupHeader />;
 
   const hh = String(now.getHours()).padStart(2, '0');
   const mm = String(now.getMinutes()).padStart(2, '0');
@@ -40,32 +46,53 @@ export default function Header() {
   const WeatherIcon = WEATHER_ICONS[outdoorCondition] || Cloud;
 
   return (
-    <header className="flex h-[86px] shrink-0 items-center justify-between border-b border-white/10 bg-black/40 px-8 backdrop-blur-md">
-      <div className="flex items-center gap-4">
-        <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-sky-400/40 bg-sky-400/10 shadow-[0_0_18px_rgba(56,189,248,0.35)]">
-          <span className="font-display text-lg font-bold text-sky-300">O</span>
+    <header className="flex h-[52px] shrink-0 items-center justify-between border-b border-white/10 bg-black/40 px-5 backdrop-blur-md">
+      <div className="flex items-center gap-3">
+        <div className="orion-logo flex h-9 w-9 items-center justify-center rounded-xl border border-sky-400/40 bg-sky-400/10 shadow-[0_0_18px_rgba(56,189,248,0.35)]">
+          <span className="font-display text-base font-bold text-sky-300">O</span>
         </div>
         <div>
-          <h1 className="font-display text-2xl font-bold tracking-[0.18em] text-white">
+          <h1 className="font-display text-xl font-bold leading-6 tracking-[0.18em] text-white">
             ORION
           </h1>
-          <p className="text-[11px] uppercase tracking-[0.15em] text-slate-400">
+          <p className="text-[10px] uppercase tracking-[0.15em] text-slate-400">
             {APARTMENT_NAME} · {APARTMENT_REF}
           </p>
         </div>
       </div>
 
-      <div className="flex items-center gap-8">
+      <div className="flex items-center gap-6">
+        <div
+          role="group"
+          aria-label="Thème d’affichage"
+          className="flex items-center overflow-hidden rounded-full border border-white/15 bg-white/5 text-[10px] font-semibold uppercase tracking-wide"
+        >
+          <Palette size={12} className="ml-2.5 text-slate-400" aria-hidden="true" />
+          {THEMES.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setTheme(t.id)}
+              aria-pressed={theme === t.id}
+              className={`px-2.5 py-1.5 transition ${
+                theme === t.id ? 'bg-sky-400/20 text-sky-200' : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
         <div className="text-right">
-          <div className="font-display text-3xl font-semibold leading-none tracking-wider text-white tabular-nums">
+          <div className="font-display text-2xl font-semibold leading-none tracking-wider text-white tabular-nums">
             {hh}
             <span className="text-sky-400">:</span>
             {mm}
           </div>
-          <div className="mt-1 text-[11px] capitalize text-slate-400">{dateLabel}</div>
+          <div className="mt-0.5 text-[10px] capitalize text-slate-400">{dateLabel}</div>
         </div>
 
-        <div className="h-9 w-px bg-white/10" />
+        <div className="h-7 w-px bg-white/10" />
 
         <div className="flex items-center gap-2 text-slate-200">
           <WeatherIcon size={20} className="text-sky-300" strokeWidth={1.8} />

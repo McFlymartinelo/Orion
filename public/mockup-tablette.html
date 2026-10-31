@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101126">
+<title>ORION · Tablette 10″</title>
+<style>
+:root{color-scheme:dark;--bg:#0d0e20;--panel:#181a31;--panel2:#20223c;--line:#343653;--muted:#9699ba;--white:#f6f4ff;--pink:#ff4eaa;--blue:#4ecbff;--cyan:#3ee4ec;--amber:#ffc451;--green:#5ce1a0;--red:#f16a7b;--hero-h:410px}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;overflow:hidden;background:#07070f;color:var(--white);font:13px Inter,ui-sans-serif,system-ui,"Segoe UI",sans-serif;display:grid;place-items:center}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,.splitter:focus-visible,.colHandle:focus-visible,.rowHandle:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+
+/* ── Cadre tablette 10″ : 1280 × 800 maximum ── */
+.frame{position:relative;width:min(1280px,100vw);height:min(800px,100vh);overflow:hidden;display:flex;flex-direction:column;padding:0 16px 12px;background:radial-gradient(ellipse at 50% 8%,#26204a 0,transparent 48%),radial-gradient(ellipse at 100% 40%,#32173255,transparent 40%),var(--bg)}
+@media(min-width:1300px) and (min-height:820px){.frame{border-radius:22px;box-shadow:0 0 0 1px #ffffff18,0 30px 90px #000c}}
+
+.top{height:52px;flex:none;display:flex;align-items:center;gap:26px;border-bottom:1px solid #ffffff12}
+.brand{display:flex;align-items:center;gap:10px;min-width:150px}
+.logo{width:34px;height:34px;border-radius:11px;background:linear-gradient(145deg,#1eecff,#6d6aff 60%,#ed54bd);color:#fff;display:grid;place-items:center;font-weight:900;font-size:16px;box-shadow:0 0 22px #8f59ff70}
+.brand b{letter-spacing:2.6px;font-size:16px}
+.brand small{display:block;color:#9296b3;font-size:8.5px;letter-spacing:1.1px;margin-top:3px}
+.nav{display:flex;height:100%;align-items:center;gap:4px}
+.nav button{height:100%;position:relative;background:none;border:0;padding:0 14px;color:#a8aac3;font-size:12px}
+.nav button.active{color:#fff}
+.nav button.active:after{content:"";position:absolute;bottom:0;left:13px;right:13px;height:2px;background:linear-gradient(90deg,var(--blue),var(--pink));box-shadow:0 0 10px #e245c9}
+.righttop{margin-left:auto;display:flex;align-items:center;gap:16px}
+.status{border:1px solid #53dfa055;background:#16332c77;color:#80efb9;border-radius:99px;padding:6px 11px;font-size:10px;display:flex;align-items:center;gap:7px}
+.status i,.online i{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 9px var(--green)}
+.time{text-align:right;font-size:15px;font-weight:750;font-variant-numeric:tabular-nums}
+.time small{display:block;font-size:9px;font-weight:500;color:var(--muted);margin-top:2px}
+.iconbtn{background:#ffffff08;border:1px solid #ffffff18;border-radius:11px;width:34px;height:34px;color:#cbd0ea}
+
+.intro{flex:none;height:50px;display:flex;align-items:center;gap:14px;margin:4px 0 6px}
+.eyebrow{font-size:9px;letter-spacing:1.5px;color:#a6a8c7;font-weight:800}
+.intro h1{font-size:18px;margin:3px 0 0;letter-spacing:-.3px}
+.rightintro{margin-left:auto;display:flex;gap:8px;align-items:center}
+.pill{font-size:10px;color:#b7bbd4;border:1px solid #ffffff14;border-radius:99px;padding:7px 12px;background:#ffffff08}
+.pill strong{color:#fff;margin-left:5px}
+.addbtn{border:1px solid #46c8eb77;border-radius:99px;background:#12303f;color:#8fe6ff;padding:8px 15px;font-size:11px;font-weight:700;transition:.15s}
+.addbtn:hover:not(:disabled){background:#194358;box-shadow:0 0 14px #3ee4ec33}
+.addbtn:disabled{opacity:.4;cursor:not-allowed;filter:grayscale(.7)}
+
+/* ── Scène : plan (hauteur fixe) + séparateur ; widgets en couche absolue ── */
+.stage{position:relative;flex:1;min-height:0}
+.toprow{height:var(--hero-h);display:flex}
+.layer{position:absolute;inset:0;pointer-events:none;z-index:4}
+.layer>*{pointer-events:auto}
+
+.hero{flex:none;position:relative;display:flex;flex-direction:column;min-width:0;border:1px solid #53507888;border-radius:20px;overflow:hidden;background:radial-gradient(ellipse at 50% 48%,#343050 0,#20203d 43%,#17182d 100%);box-shadow:0 18px 60px #0004,inset 0 0 70px #ac47ff0a}
+.hero:before{content:"";position:absolute;inset:0;background-image:linear-gradient(#ffffff05 1px,transparent 1px),linear-gradient(90deg,#ffffff05 1px,transparent 1px);background-size:35px 35px;mask-image:linear-gradient(transparent,#000 40%,#000 90%);opacity:.32;pointer-events:none}
+.heroTop{position:relative;z-index:2;flex:none;display:flex;align-items:center;justify-content:space-between;padding:14px 18px 0}
+.heroTop h2{font-size:13px;margin:0}
+.heroTop small{display:block;color:#a4a6c1;font-size:10px;margin-top:4px}
+.viewtools{display:flex;gap:6px}
+.viewtools button{border:1px solid #ffffff20;background:#14172bc9;border-radius:9px;padding:6px 12px;color:#c9cce0;font-size:10px}
+.viewtools button.selected{border-color:#45d8ee88;color:#6deaf0;background:#11334088}
+.planwrap{position:relative;z-index:1;flex:1;min-height:0;padding:4px 14px}
+.pv{width:100%;height:100%;display:block}
+.view2d{height:100%;display:flex;gap:18px;align-items:center;justify-content:center}
+.view2d svg{height:100%;width:auto;max-width:56%;flex:0 1 auto}
+.roomInfo{flex:0 1 250px;min-width:170px;background:#14172b99;border:1px solid #ffffff14;border-radius:14px;padding:12px;align-self:center;max-height:100%;overflow:hidden}
+.roomInfo h3{margin:5px 0 3px;font-size:16px}
+.roomInfo p{margin:0 0 10px;font-size:10px;color:var(--muted)}
+.roomInfo .rows{display:grid;gap:5px}
+.hero .foot{position:relative;z-index:2;flex:none;display:flex;align-items:center;gap:14px;padding:0 18px 12px;font-size:10px;color:#c1c4d9}
+.online{display:flex;align-items:center;gap:6px;color:#80efb9}
+.online b{color:#fff}
+.legend{margin-left:auto;display:flex;gap:12px;color:var(--muted);font-size:9px}
+.legend span{display:flex;align-items:center;gap:5px}
+.legend i{width:7px;height:7px;border-radius:50%;background:var(--amber)}
+.legend i.off{background:#748197}.legend i.plug{border-radius:2px;background:#53d9ff}
+
+/* plan 2D / 3D */
+.pv .rs{fill:#29253f;stroke:#8c7eaa;stroke-width:2;cursor:pointer;transition:fill .15s,stroke .15s}
+.pv .rs:hover{fill:#393253;stroke:#9c9af0}
+.pv .rs.sel{fill:#30304e;stroke:#69dcf4;stroke-width:3}
+#plan3d .rs{stroke-width:1.6}
+#plan3d .rs.sel{fill:#43345a;stroke:#ff72c5;stroke-width:2.6;filter:url(#glow)}
+.pv .gl3{fill:#5a72ff;opacity:.22;filter:url(#blur)}
+.pv .slab{fill:#1d1e36;stroke:#6e6ca3;stroke-width:1.2;pointer-events:none}
+.pv .wA{fill:#37324f;stroke:#aba4d0;stroke-width:1.4;pointer-events:none}
+.pv .wB{fill:#2a2946;stroke:#827cab;stroke-width:1.4;pointer-events:none}
+.pv .win{fill:#45c9fd;fill-opacity:.55;stroke:#a0efff;stroke-width:1.2;pointer-events:none}
+.pv .bx{pointer-events:none}
+.pv .bx polygon{stroke:#a7a6d3;stroke-width:.9;stroke-linejoin:round}
+.pv .bx .t{fill:#5d5582}.pv .bx .r{fill:#443d66}.pv .bx .f{fill:#352f52}
+.pv .bx.soft .t{fill:#9a6a9f}.pv .bx.soft .r{fill:#74507a}.pv .bx.soft .f{fill:#5e405f}
+.pv .bx.wood .t{fill:#8f6590}.pv .bx.wood .r{fill:#6d4a6f}.pv .bx.wood .f{fill:#58395a}
+.pv .fr{fill:none;stroke:#6c648f;stroke-width:2;pointer-events:none}
+.pv .fr.soft{stroke:#a0679c}
+.pv .lbl{font-size:11.5px;font-weight:700;letter-spacing:.5px;fill:#e2defa;text-anchor:middle;paint-order:stroke;stroke:#17172d;stroke-width:3px;stroke-linejoin:round;pointer-events:none}
+.pv .lbl.s{font-size:9px}
+.pv .sq{font-size:9.5px;fill:#9aa0c0;text-anchor:middle;paint-order:stroke;stroke:#17172d;stroke-width:2.4px;pointer-events:none}
+#plan2d .lbl{font-size:23px;stroke-width:5px}
+#plan2d .lbl.s{font-size:14px}
+#plan2d .sq{font-size:17px;stroke-width:4px}
+.dev{cursor:pointer}
+.dev .hit{fill:#0000}
+.dev .dv{fill:#727e92;stroke:#aab6c7;stroke-width:1.6;transition:.15s}
+.dev.plug .dv{fill:#253b4c;stroke:#70c9e8}
+.dev.on .dv{fill:#ffbd62;stroke:#ffe4a9;filter:url(#glow)}
+.dev.plug.on .dv{fill:#53d9ff;stroke:#c2f5ff}
+.dev:hover .dv{stroke:#fff}
+
+/* séparateur vertical */
+.splitter{flex:none;width:14px;position:relative;cursor:col-resize;touch-action:none;display:flex;align-items:center;justify-content:center;z-index:6}
+.splitter:before{content:"";height:60px;width:3px;border-radius:9px;background:#8270aa88;transition:.18s}
+.splitter:after{content:"⋮";position:absolute;top:calc(50% - 20px);left:-3px;width:20px;height:40px;border:1px solid #ffffff22;border-radius:7px;background:#19182d;color:#bfc5dc;display:grid;place-items:center;font-size:13px;pointer-events:none}
+.splitter:hover:before,.splitter.dragging:before{height:90px;background:linear-gradient(#54d7f0,#e866bd);box-shadow:0 0 12px #8e6ccc88}
+.splitter.blocked:before{background:var(--red);box-shadow:0 0 12px #f16a7b99}
+.dragging-split{cursor:col-resize;user-select:none}
+.dragging-split .hero{pointer-events:none}
+
+/* ── Widgets ── */
+.widget{position:absolute;border:1px solid #ffffff1c;border-radius:14px;padding:9px 16px 10px 12px;overflow:hidden;background:linear-gradient(145deg,#1d1e38,#161729);box-shadow:0 6px 18px #0003;transition:left .2s,top .2s,width .2s,height .2s,border-color .15s,box-shadow .15s}
+.resizing .widget,.dragging-split .widget{transition:none}
+.widget.proposed{border-style:dashed;border-color:#8f78c866}
+.widget.blocked{border-color:var(--red)!important;box-shadow:0 0 0 1px var(--red),0 0 18px #f16a7b66}
+.widget.active{border-color:#e866bd;box-shadow:0 0 18px #e866bd33}
+.wh{height:24px;display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.wIcon{width:22px;height:22px;flex:none;border-radius:7px;display:grid;place-items:center;background:#302441;color:#ef8ac7;font-size:12px}
+.wh b{font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.tag{font-style:normal;font-size:7.5px;letter-spacing:.5px;color:#c6a8ff;border:1px solid #9c82da66;border-radius:99px;padding:2px 6px;flex:none}
+.widget[data-narrow="1"] .tag{display:none}
+.wa{margin-left:auto;display:flex;gap:2px;flex:none}
+.wa button{width:22px;height:22px;border:0;border-radius:6px;background:transparent;color:#8a8fb0;font-size:13px;line-height:1;padding:0}
+.wa button:hover{background:#ffffff14;color:#fff}
+.wb{height:calc(100% - 30px);min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:6px}
+.colHandle{position:absolute;top:50%;right:-1px;width:14px;height:44px;transform:translateY(-50%);border:1px solid #ffffff2e;border-right:0;border-radius:7px 0 0 7px;background:linear-gradient(90deg,#19182d,#2a2342);color:#c9bfdc;display:grid;place-items:center;cursor:ew-resize;touch-action:none;opacity:.55;font-size:11px;transition:.15s;z-index:3}
+.rowHandle{position:absolute;left:16px;right:30px;bottom:0;height:10px;cursor:ns-resize;touch-action:none;display:flex;align-items:flex-end;justify-content:center;z-index:3}
+.rowHandle span{width:46px;height:4px;border-radius:4px 4px 0 0;background:#8270aa;opacity:.5;transition:.15s}
+.widget:hover .colHandle,.colHandle:hover,.colHandle:focus-visible{opacity:1;color:#fff;border-color:#e866bd;background:#382344}
+.widget:hover .rowHandle span,.rowHandle:hover span,.rowHandle:focus-visible span{opacity:1;background:linear-gradient(90deg,#54d7f0,#e866bd);height:5px}
+
+.metrics{display:flex;gap:8px;min-height:0}
+.metric{flex:1;min-width:0;background:#24253f;border-radius:10px;padding:6px 9px;overflow:hidden}
+.metric small{display:block;color:#a7a9c3;font-size:8.5px;letter-spacing:.55px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.metric strong{display:block;font-size:17px;margin-top:2px;letter-spacing:-.4px;white-space:nowrap}
+.metric strong em{font-style:normal;font-size:9.5px;color:var(--muted);font-weight:500;letter-spacing:0}
+.metric .sub{display:block;font-size:9px;color:var(--green);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.quality{display:flex;justify-content:space-between;align-items:center;flex:none;padding:0 10px;height:26px;background:#24253f;border-radius:9px;font-size:9.5px;color:#c4c7dc}
+.quality b{color:var(--green)}
+.deviceRow{display:flex;align-items:center;gap:8px;height:28px;flex:none;padding:0 9px;border-radius:9px;background:#24253f;font-size:10px}
+.deviceRow .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.deviceRow small{margin-left:auto;color:#a4a7c2;font-size:9px;white-space:nowrap}
+.dot{width:7px;height:7px;flex:none;border-radius:50%;background:#59607a}
+.dot.on{background:var(--amber);box-shadow:0 0 8px #ffc45199}
+.dot.ok{background:var(--green);box-shadow:0 0 8px #5ce1a088}
+.switch{margin-left:4px;flex:none;width:28px;height:16px;border:0;border-radius:20px;background:#454761;padding:2px}
+.switch i{display:block;width:12px;height:12px;border-radius:50%;background:#c7c9d9;transition:.18s}
+.switch.on{background:#d34096}.switch.on i{transform:translateX(12px);background:#fff}
+.chips{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;flex:1;min-height:0}
+.chips button{border:1px solid #ffffff15;border-radius:10px;background:#24253e;color:#cdd0e1;font-size:9.5px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0 3px;min-height:0;min-width:0;white-space:nowrap}
+.chips button span{font-size:14px;line-height:1}
+.chips.inline button{flex-direction:row;gap:5px}
+.chips button.active{border-color:#da52b2;background:#44264c;color:#fff;box-shadow:inset 0 0 18px #e642a019}
+.watts{display:flex;align-items:baseline;gap:6px;flex:none}
+.watts strong{font-size:22px;letter-spacing:-.5px}
+.watts small{font-size:9.5px;color:var(--muted)}
+.subline{font-size:9.5px;color:#a8aac4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:none}
+.chartbox{flex:1;min-height:0}
+.chartbox svg{width:100%;height:100%;display:block;overflow:visible}
+.chartbox path.line{fill:none;stroke:#ffad46;stroke-width:2.2;vector-effect:non-scaling-stroke;filter:url(#chartGlow)}
+.chartbox path.area{fill:url(#chartFill);opacity:.5}
+.hint{font-size:10px;color:var(--muted)}
+.climrow{display:flex;align-items:center;gap:10px}
+.climrow .metric{flex:1}
+
+.addslot{position:absolute;border:1.5px dashed #5d5b8c;border-radius:14px;background:#ffffff05;color:#9ea2c4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:11px;transition:left .2s,top .2s,width .2s,height .2s,border-color .15s,background .15s,color .15s}
+.addslot:hover{border-color:var(--cyan);color:#cffaff;background:#12303f66}
+.addslot .plus{width:26px;height:26px;border-radius:9px;border:1px solid #58657a;background:#1b2333;display:grid;place-items:center;font-size:18px;font-weight:300;line-height:1}
+.resizing .addslot,.dragging-split .addslot{transition:none}
+
+/* ── Modales (dans le cadre) ── */
+.overlay{position:absolute;inset:0;background:#050611a8;backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:16px;z-index:20}
+.overlay.open{display:flex}
+.modal{width:min(1000px,100%);max-height:100%;overflow:auto;background:#141a2b;border:1px solid #43516b;border-radius:20px;box-shadow:0 30px 100px #000b;padding:18px 20px 20px}
+.modalhead{display:flex;align-items:center;justify-content:space-between}
+.modalhead h2{font-size:16px;margin:0}
+.modalhead p{font-size:10px;color:var(--muted);margin:5px 0 0}
+.close{width:30px;height:30px;border:1px solid #ffffff20;border-radius:9px;background:#20283a;color:#cbd3e0}
+.category{display:flex;align-items:center;gap:8px;font-size:9px;color:#8e9bb1;letter-spacing:1px;font-weight:800;margin:16px 0 8px}
+.category i{font-style:normal;font-size:8px;letter-spacing:.4px;border-radius:99px;padding:3px 7px}
+.category.ex i{color:#70dfb0;border:1px solid #60db9d55}
+.category.pr i{color:#c6a8ff;border:1px solid #9c82da66}
+.catalog{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.choice{border:1px solid #ffffff1c;border-radius:12px;background:#1b2332;text-align:left;padding:10px 11px;transition:.15s;min-height:84px}
+.choice.proposed{border-style:dashed;border-color:#8f78c888;background:#1b1a30}
+.choice:hover:not(:disabled){border-color:#56cdec;background:#1b3040;transform:translateY(-1px)}
+.choice.proposed:hover:not(:disabled){border-color:#c6a8ff;background:#26213f}
+.choice:disabled{opacity:.42;cursor:not-allowed;filter:grayscale(.6)}
+.choice .ci{font-size:15px;margin-bottom:5px;color:#ef8ac7}
+.choice b{display:flex;align-items:center;gap:6px;font-size:10.5px}
+.choice small{display:block;font-size:9px;color:#a0acc0;margin-top:4px;line-height:1.4}
+.choice .warn{color:#f6a1ac}
+.badge{font-size:7px;letter-spacing:.5px;color:#70dfb0;border:1px solid #60db9d55;border-radius:99px;padding:2px 6px;font-weight:700;white-space:nowrap}
+.badge.pr{color:#c6a8ff;border-color:#9c82da77}
+.configBox{width:min(380px,100%);background:#171e2d;border:1px solid #43516b;border-radius:17px;padding:18px}
+.configBox h3{margin:0 0 6px;font-size:14px}
+.configBox label{display:block;font-size:10px;color:#a7b2c5;margin:12px 0 6px}
+.configBox select{width:100%;background:#0e1522;border:1px solid #39465c;border-radius:9px;padding:9px;color:#f3f5fa;font:inherit;font-size:11px}
+.configBox select:disabled{opacity:.5}
+.configBox p{font-size:10px;color:var(--muted);margin:12px 0 0;line-height:1.5}
+.configBtns{display:flex;justify-content:flex-end;gap:7px;margin-top:16px}
+.configBtns button{border:1px solid #ffffff18;border-radius:9px;background:#232b3b;padding:8px 12px;font-size:10px}
+.configBtns .save{background:#17415a;border-color:#367d9d;color:#a5e8ff}
+.configBtns .danger{margin-right:auto;color:#f6a1ac;border-color:#f16a7b44}
+.toast{position:absolute;left:50%;bottom:16px;transform:translate(-50%,18px);opacity:0;pointer-events:none;background:#211e3a;border:1px solid #6a4f83;border-radius:12px;padding:10px 15px;font-size:11px;box-shadow:0 12px 40px #0008;transition:.2s;z-index:30;white-space:nowrap}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <filter id="glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <filter id="blur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="14"/></filter>
+  <filter id="chartGlow"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#ffae42"/><stop offset="1" stop-color="#ffae42" stop-opacity="0"/></linearGradient>
+</defs></svg>
+
+<div class="frame" id="frame">
+  <header class="top">
+    <div class="brand"><div class="logo">O</div><div><b>ORION</b><small>HOME AUTOMATION</small></div></div>
+    <nav class="nav"><button class="active" data-tab="Maison">Maison</button><button data-tab="Pièces">Pièces</button><button data-tab="Énergie">Énergie</button><button data-tab="Réseau">Réseau</button></nav>
+    <div class="righttop"><div class="status"><i></i> MAISON EN LIGNE</div><div class="time" id="clock">19:42<small>Vendredi 30 octobre</small></div><button class="iconbtn" id="settings" title="Réglages" aria-label="Réglages">⚙</button></div>
+  </header>
+  <div class="intro">
+    <div><div class="eyebrow">TABLEAU DE BORD · DOMAINE DE WALLON E36</div><h1>La maison, en un regard</h1></div>
+    <div class="rightintro"><div class="pill">☀ Extérieur <strong>14°</strong></div><div class="pill">⌂ Séjour <strong>21,4°</strong></div><div class="pill">⟳ Sync <strong>19:41</strong></div><button class="addbtn" id="openCatalog">＋ Ajouter</button></div>
+  </div>
+
+  <main class="stage" id="stage">
+    <div class="toprow" id="toprow">
+      <section class="hero" id="hero">
+        <div class="heroTop"><div><h2 id="heroTitle">Vue 3D interactive</h2><small id="planHint">Touchez une pièce ou un équipement</small></div><div class="viewtools" role="group" aria-label="Mode d’affichage"><button data-mode="2d">2D</button><button data-mode="3d" class="selected">3D</button></div></div>
+        <div class="planwrap">
+          <svg class="pv" id="plan3d" viewBox="-14 -226 656 340" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Appartement en 3D avec pièces interactives"></svg>
+          <div class="view2d" id="view2d" hidden><svg class="pv" id="plan2d" viewBox="-6 -6 662 842" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Plan 2D de l’appartement"></svg><aside class="roomInfo" id="roomInfo"></aside></div>
+        </div>
+        <div class="foot"><span class="online"><i></i> <b id="devCount">12</b> équipements connectés</span><span style="color:#555978">·</span><span id="selInfo"></span><div class="legend"><span><i></i>Allumé</span><span><i class="off"></i>Éteint</span><span><i class="plug"></i>Prise</span></div></div>
+      </section>
+      <div class="splitter" id="splitter" role="separator" aria-orientation="vertical" aria-label="Largeur du plan et des widgets" aria-valuemin="42" aria-valuemax="75" aria-valuenow="56" tabindex="0" title="Glisser pour redimensionner · double-clic pour réinitialiser"></div>
+    </div>
+    <div class="layer" id="layer"><button class="addslot" id="addslot" hidden aria-label="Ajouter un widget"><span class="plus">＋</span><span>Ajouter un widget</span></button></div>
+  </main>
+
+  <div class="overlay" id="catalog" role="dialog" aria-modal="true" aria-labelledby="catTitle"><div class="modal">
+    <div class="modalhead"><div><h2 id="catTitle">Ajouter un widget</h2><p>Les widgets grisés ne tiennent pas dans l’espace restant : réduisez ou retirez un widget pour libérer de la place.</p></div><button class="close" id="closeCatalog" aria-label="Fermer">✕</button></div>
+    <div class="category ex">DÉJÀ DISPONIBLES DANS ORION <i>FONCTIONNEL</i></div><div class="catalog" id="existingChoices"></div>
+    <div class="category pr">PROPOSÉS · ÉVOLUTION FUTURE <i>MAQUETTE SEULEMENT</i></div><div class="catalog" id="proposedChoices"></div>
+  </div></div>
+  <div class="overlay" id="config" role="dialog" aria-modal="true" aria-labelledby="configTitle"><div class="configBox">
+    <h3 id="configTitle">Configurer le widget</h3>
+    <label for="roomSelect">Pièce</label><select id="roomSelect"></select>
+    <p>Largeur : poignée <b>⋮</b> sur le bord droit du widget. Hauteur : tirer le bord inférieur. Les flèches du clavier fonctionnent aussi sur les poignées.</p>
+    <div class="configBtns"><button class="danger" id="removeWidget">Retirer</button><button id="cancelConfig">Annuler</button><button class="save" id="saveConfig">Enregistrer</button></div>
+  </div></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</div>
+
+<script>
+(()=>{
+'use strict';
+const $=s=>document.querySelector(s);
+const COLS=12,G=10,R=10,HERO_H=410,SPL=14,MAXPH=16,KEY='orion-tablette-v1',REGIONS=['right','bottom'];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const rowsFor=px=>Math.ceil((px+G)/R);
+
+/* ───────── Données ───────── */
+const ROOMS=[
+ {id:'Balcon',x:0,y:0,w:130,h:330,area:'4,75',fs:'',l3:[65,200]},
+ {id:'Séjour',x:130,y:0,w:520,h:330,area:'21,85',fs:'',l3:[505,125]},
+ {id:'Cuisine',x:130,y:330,w:300,h:130,area:'6,5',fs:'',l3:[345,428]},
+ {id:'Entrée',x:430,y:330,w:220,h:130,area:'4,95',fs:'',l3:[545,420]},
+ {id:'Chambre 2',x:130,y:460,w:300,h:160,area:'9,65',fs:'',l3:[335,600]},
+ {id:'Dégagement',x:430,y:460,w:110,h:160,area:'',fs:'s',l3:[485,545]},
+ {id:'Rangement',x:540,y:460,w:110,h:40,area:'',fs:'s',l3:null},
+ {id:'WC',x:540,y:500,w:110,h:120,area:'',fs:'',l3:[595,575]},
+ {id:'Chambre 1',x:130,y:620,w:300,h:210,area:'10,7',fs:'',l3:[345,795]},
+ {id:'Salle de bain',x:430,y:620,w:220,h:210,area:'',fs:'',l3:[505,745]}
+];
+const ROOM_NAMES=['Tout le logement','Séjour','Cuisine','Entrée','Chambre 1','Chambre 2','Salle de bain','Balcon'];
+const DEVICES=[
+ {id:'l-sej',kind:'light',name:'Suspension séjour',room:'Séjour',x:390,y:205,w:72,on:true},
+ {id:'l-rub',kind:'light',name:'Ruban Yeelight',room:'Séjour',x:190,y:262,w:14,on:false},
+ {id:'l-app',kind:'light',name:'Lampe d’appoint',room:'Séjour',x:565,y:105,w:18,on:true},
+ {id:'p-tv',kind:'plug',name:'Prise TV',room:'Séjour',x:500,y:45,w:28,on:true},
+ {id:'p-cli',kind:'plug',name:'Prise Clim',room:'Séjour',x:605,y:255,w:0,on:false},
+ {id:'l-cui',kind:'light',name:'Plafonnier cuisine',room:'Cuisine',x:215,y:432,w:20,on:false},
+ {id:'p-ver',kind:'plug',name:'Prise Verres',room:'Cuisine',x:380,y:432,w:42,on:true},
+ {id:'l-ent',kind:'light',name:'Applique entrée',room:'Entrée',x:540,y:435,w:10,on:false},
+ {id:'l-ch2',kind:'light',name:'Plafonnier chambre 2',room:'Chambre 2',x:280,y:588,w:20,on:false},
+ {id:'l-ch1',kind:'light',name:'Plafonnier chambre 1',room:'Chambre 1',x:280,y:765,w:20,on:false},
+ {id:'l-sdb',kind:'light',name:'Miroir salle de bain',room:'Salle de bain',x:545,y:780,w:24,on:true},
+ {id:'l-bal',kind:'light',name:'Guirlande balcon',room:'Balcon',x:65,y:262,w:8,on:false}
+];
+const FURN=[
+ {x:255,y:118,w:112,d:48,h:16,cls:''},{x:268,y:124,w:87,d:24,h:6,z0:16,cls:'soft'},
+ {x:385,y:32,w:78,d:18,h:16,cls:'wood'},{x:430,y:205,w:90,d:62,h:12,cls:'wood'},
+ {x:188,y:354,w:128,d:32,h:18,cls:''},{x:470,y:345,w:70,d:16,h:14,cls:'wood'},
+ {x:196,y:495,w:155,d:72,h:12,cls:''},{x:207,y:501,w:62,d:31,h:5,z0:12,cls:'soft'},
+ {x:194,y:655,w:162,d:95,h:12,cls:''},{x:207,y:662,w:65,d:38,h:5,z0:12,cls:'soft'},
+ {x:562,y:680,w:44,d:118,h:14,cls:''},{x:570,y:690,w:28,d:97,h:2,z0:14,cls:'soft'}
+];
+const WINDOWS=[ // sur les murs du fond : [axe, coord fixe, début, fin, z0, z1]
+ ['y',830,200,360,10,30],['x',130,470,590,10,30],['x',0,90,250,4,32]
+];
+const TYPES={
+ summary:{name:'Vue d’ensemble',icon:'⌂',desc:'Lumières, prises et watts actifs',group:'existing',minW:250,minH:100,defR:11},
+ air:{name:'Air & climat',icon:'⌁',desc:'Températures, humidité, CO₂, bruit',group:'existing',minW:250,minH:100,defR:16,room:1},
+ climate:{name:'Climatisation',icon:'❄',desc:'Consigne, marche/arrêt, mode',group:'existing',minW:240,minH:100,defR:11,room:1},
+ scenes:{name:'Scènes favorites',icon:'✦',desc:'Raccourcis vers vos ambiances',group:'existing',minW:230,minH:100,defR:11},
+ lights:{name:'Éclairage d’une pièce',icon:'☼',desc:'Interrupteurs et niveau de lumière',group:'existing',minW:240,minH:90,defR:13,room:1},
+ plugs:{name:'Prises & consommation',icon:'▣',desc:'État et puissance instantanée',group:'existing',minW:240,minH:100,defR:12},
+ alexa:{name:'Alexa',icon:'◉',desc:'Volume, muet et message vocal',group:'existing',minW:230,minH:100,defR:11},
+ connections:{name:'État des connexions',icon:'◌',desc:'Hue, Netatmo, Kasa, Tuya…',group:'existing',minW:220,minH:90,defR:12},
+ history:{name:'Historique énergétique',icon:'⚡',desc:'Courbes par heure et par jour',group:'proposed',minW:240,minH:100,defR:14},
+ activity:{name:'Journal des actions',icon:'↻',desc:'Dernières commandes et scènes',group:'proposed',minW:230,minH:90,defR:12},
+ schedule:{name:'Programmations',icon:'◷',desc:'Scènes et clim planifiées',group:'proposed',minW:220,minH:90,defR:11},
+ weather:{name:'Météo détaillée',icon:'☀',desc:'Prévisions sur la journée',group:'proposed',minW:240,minH:100,defR:12},
+ airquality:{name:'Qualité de l’air',icon:'♧',desc:'Indice lisible et seuils CO₂',group:'proposed',minW:240,minH:100,defR:12,room:1},
+ roomtemp:{name:'Température d’une pièce',icon:'°',desc:'Capteur et confort d’une pièce',group:'proposed',minW:220,minH:100,defR:11,room:1},
+ shortcut:{name:'Commande rapide',icon:'⏻',desc:'Éteindre, mode absence, clim…',group:'proposed',minW:230,minH:100,defR:11}
+};
+const DEFAULT_SLOTS=[{type:'air',room:'Séjour'},{type:'lights',room:'Séjour'},{type:'scenes'},{type:'summary'},{type:'history'},{type:'connections'}];
+
+/* ───────── État + persistance ───────── */
+let uidN=0;const uid=()=>'w'+Date.now().toString(36)+(uidN++).toString(36);
+function sanitizeSlot(s){
+ if(!s||!TYPES[s.type])return null;
+ const o={id:typeof s.id==='string'?s.id:uid(),type:s.type,room:ROOM_NAMES.includes(s.room)?s.room:'Tout le logement'};
+ if(Number.isFinite(s.w))o.w=clamp(Math.round(s.w),1,COLS);
+ if(Number.isFinite(s.h))o.h=clamp(Math.round(s.h),1,80);
+ if(typeof s.on==='boolean')o.on=s.on;
+ if(Number.isInteger(s.scene))o.scene=s.scene;
+ return o;
+}
+function loadState(){
+ let raw=null;try{raw=JSON.parse(localStorage.getItem(KEY))}catch(_){}
+ const st={slots:null,frac:.56,mode:'3d',room:'Séjour',on:{}};
+ if(raw&&Array.isArray(raw.slots)){
+  st.slots=raw.slots.map(sanitizeSlot).filter(Boolean);
+  if(Number.isFinite(raw.frac))st.frac=clamp(raw.frac,.3,.85);
+  if(raw.mode==='2d')st.mode='2d';
+  if(ROOMS.some(r=>r.id===raw.room))st.room=raw.room;
+  if(raw.on&&typeof raw.on==='object')for(const d of DEVICES)if(typeof raw.on[d.id]==='boolean')st.on[d.id]=raw.on[d.id];
+ }
+ if(!st.slots)st.slots=DEFAULT_SLOTS.map(sanitizeSlot);
+ const seen=new Set();for(const s of st.slots){if(seen.has(s.id))s.id=uid();seen.add(s.id)}
+ return st;
+}
+const state=loadState();
+let slots=state.slots,rev=0;
+function save(){
+ const out={slots:slots.map(({id,type,room,w,h,on,scene})=>({id,type,room,w,h,on,scene})),frac:state.frac,mode:state.mode,room:state.room,on:state.on};
+ try{localStorage.setItem(KEY,JSON.stringify(out))}catch(_){}
+}
+const isOn=d=>d.id in state.on?state.on[d.id]:d.on;
+const devsOf=room=>DEVICES.filter(d=>room==='Tout le logement'||d.room===room);
+
+/* ───────── Toast ───────── */
+const toastEl=$('#toast');let toastT;
+function toast(s){toastEl.textContent=s;toastEl.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>toastEl.classList.remove('show'),1900)}
+
+/* ───────── Moteur de placement ───────── */
+const stage=$('#stage'),layer=$('#layer'),hero=$('#hero'),splitter=$('#splitter'),addslot=$('#addslot');
+document.documentElement.style.setProperty('--hero-h',HERO_H+'px');
+function heroBounds(){const W=stage.clientWidth,min=Math.round(W*.42);return{min,max:Math.max(min,W-SPL-300)}}
+const curHeroW=(frac=state.frac)=>{const b=heroBounds();return clamp(Math.round(frac*stage.clientWidth),b.min,b.max)};
+function metrics(heroW=curHeroW()){
+ const W=stage.clientWidth,H=stage.clientHeight;
+ const mk=(ox,oy,w,h)=>({ox,oy,W:w,H:h,cw:(w-G*(COLS-1))/COLS,rows:Math.max(0,Math.floor((h+G)/R))});
+ return{right:mk(heroW+SPL,0,W-heroW-SPL,HERO_H),bottom:mk(0,HERO_H+G,W,H-HERO_H-G)};
+}
+const spanFor=(reg,px)=>{for(let s=1;s<=COLS;s++)if(s*reg.cw+(s-1)*G>=px)return s;return null};
+const newGrid=rows=>Array.from({length:rows},()=>new Array(COLS).fill(0));
+function isFree(occ,r,c,span,rows){for(let y=r;y<r+rows;y++)for(let x=c;x<c+span;x++)if(occ[y][x])return false;return true}
+function mark(occ,r,c,span,rows){for(let y=r;y<r+rows;y++)for(let x=c;x<c+span;x++)occ[y][x]=1}
+function findSpot(occ,span,rows){for(let r=0;r+rows<=occ.length;r++)for(let c=0;c+span<=COLS;c++)if(isFree(occ,r,c,span,rows))return{row:r,col:c};return null}
+function sizeIn(slot,t,rn,reg,forceMin){
+ const minSpan=spanFor(reg,t.minW),minR=rowsFor(t.minH);
+ if(!minSpan||minR>reg.rows)return null;
+ const span=forceMin?minSpan:clamp(slot.w??(rn==='right'?COLS:4),minSpan,COLS);
+ const rows=forceMin?minR:clamp(slot.h??t.defR,minR,reg.rows);
+ return{span,rows,minSpan,minR};
+}
+function place(occ,slot,t,rn,reg,forceMin){
+ const base=sizeIn(slot,t,rn,reg,forceMin);if(!base)return null;
+ // largeur non personnalisée : on réduit pour combler un trou plus haut dans la grille
+ const spans=[];if(slot.w!=null||forceMin)spans.push(base.span);else for(let s=base.span;s>=base.minSpan;s--)spans.push(s);
+ let best=null;
+ for(const s of spans){const spot=findSpot(occ,s,base.rows);if(!spot)continue;
+  if(!best||spot.row<best.row||(spot.row===best.row&&s>best.span))best={...spot,span:s}}
+ return best&&{...base,...best};
+}
+function pack(list,m,lenient=false){
+ const occ={right:newGrid(m.right.rows),bottom:newGrid(m.bottom.rows)},out=[];let ok=true;
+ for(const slot of list){
+  const t=TYPES[slot.type];let p=null,rn;
+  for(const force of lenient?[false,true]:[false]){
+   for(rn of REGIONS){p=place(occ[rn],slot,t,rn,m[rn],force);if(p)break}
+   if(p)break;
+  }
+  if(!p){ok=false;if(!lenient)return{ok:false};continue}
+  mark(occ[rn],p.row,p.col,p.span,p.rows);out.push({slot,region:rn,...p});
+ }
+ return{ok,placements:out,occ};
+}
+function freeRect(occ,m){
+ for(const rn of REGIONS){
+  const reg=m[rn];if(reg.rows<=0)continue;
+  const spans=Object.values(TYPES).map(t=>spanFor(reg,t.minW)).filter(Boolean);if(!spans.length)continue;
+  const minS=Math.min(...spans),minRw=Math.min(...Object.values(TYPES).map(t=>rowsFor(t.minH)));
+  const spot=findSpot(occ[rn],minS,minRw);if(!spot)continue;
+  let span=minS;while(spot.col+span<COLS&&isFree(occ[rn],spot.row,spot.col+span,1,minRw))span++;
+  let rows=minRw;while(spot.row+rows<reg.rows&&rows<MAXPH&&isFree(occ[rn],spot.row+rows,spot.col,span,1))rows++;
+  return{region:rn,...spot,span,rows};
+ }
+ return null;
+}
+// Ajout d'un widget : taille par défaut, puis tailles réduites jusqu'à ce que ça tienne
+function tryAdd(typeId){
+ const t=TYPES[typeId],minR=rowsFor(t.minH),m=metrics();
+ for(const v of [{},{h:minR},{w:1},{w:1,h:minR}]){
+  const s={id:uid(),type:typeId,room:t.room?'Séjour':'Tout le logement',...v};
+  if(pack([...slots,s],m).ok)return s;
+ }
+ return null;
+}
+const canAddAny=()=>Object.keys(TYPES).some(id=>!!tryAdd(id));
+function resizeTo(slot,key,v){const prev=slot[key];slot[key]=v;const ok=pack(slots,metrics()).ok;if(!ok){if(prev===undefined)delete slot[key];else slot[key]=prev}return ok}
+
+/* ───────── Contenu des widgets ───────── */
+const sw=(on,attrs,label)=>`<button class="switch${on?' on':''}" ${attrs} aria-label="${label}" aria-pressed="${on}"><i></i></button>`;
+const metric=(label,val,unit='',sub='',showSub=false)=>`<div class="metric"><small>${label}</small><strong>${val}${unit?` <em>${unit}</em>`:''}</strong>${showSub&&sub?`<span class="sub">${sub}</span>`:''}</div>`;
+const devRow=d=>{const on=isOn(d);return `<div class="deviceRow"><span class="dot ${on?'on':''}"></span><span class="nm">${d.name}</span><small>${on?(d.w?d.w+' W':'Actif'):'Éteint'}</small>${sw(on,`data-act="dev" data-id="${d.id}"`,d.name)}</div>`};
+const rowsCount=(bh,h,gap)=>Math.max(1,Math.floor((bh+gap)/(h+gap)));
+function body(slot,bh){
+ const tall=bh>=60,rm=slot.room||'Tout le logement',rmU=(rm==='Tout le logement'?'Séjour':rm).toUpperCase();
+ switch(slot.type){
+  case'summary':{
+   const L=DEVICES.filter(d=>d.kind==='light'&&isOn(d)).length,P=DEVICES.filter(d=>d.kind==='plug'&&isOn(d)).length,W=DEVICES.filter(isOn).reduce((a,d)=>a+d.w,0);
+   return `<div class="metrics">${metric('LUMIÈRES',L,'allumées')}${metric('PRISES',P,'actives')}${metric('PUISSANCE',W,'W')}</div>`}
+  case'air':return `<div class="metrics">${metric('INTÉRIEUR · '+rmU,'21,4°','','Confortable',tall)}${metric('EXTÉRIEUR','14°','','Ressenti 13°',tall)}</div>`+(bh>=92?`<div class="quality"><span>CO₂ · 742 ppm</span><b>Air bon</b><span>Hum. 46 %</span></div>`:'');
+  case'climate':{const on=slot.on!==false;return `<div class="climrow">${metric('CLIM · '+rmU,'21°','consigne','Mode froid · ventilation moyenne',tall)}${sw(on,'data-act="clim"','Climatisation')}</div>`}
+  case'scenes':{const a=slot.scene??1;return `<div class="chips${tall?'':' inline'}">${['☼|Lumières off','✦|Détente','▣|Cinéma'].map((s,i)=>{const[ic,l]=s.split('|');return `<button data-act="scene" data-i="${i}" class="${a===i?'active':''}"><span>${ic}</span>${l}</button>`}).join('')}</div>`}
+  case'lights':{const l=devsOf(rm).filter(d=>d.kind==='light'),n=rowsCount(bh,28,6);return l.length?l.slice(0,n).map(devRow).join(''):'<div class="hint">Aucun éclairage dans cette pièce</div>'}
+  case'plugs':{const pl=DEVICES.filter(d=>d.kind==='plug'),tot=pl.filter(isOn).reduce((a,d)=>a+d.w,0);
+   return `<div class="watts"><strong>${tot} W</strong><small>consommation instantanée</small></div>`+(bh>=56?`<div class="subline">${pl.map(d=>`${d.name} · ${isOn(d)?d.w:0} W`).join('  ·  ')}</div>`:'')}
+  case'alexa':return `<div class="metrics">${metric('ALEXA SALON','Volume 50 %','','En ligne · appuyez pour parler',tall)}</div>`;
+  case'connections':{const it=[['Netatmo','À jour'],['Hue · 4 lampes','Connecté'],['Kasa · 2 prises','Connecté'],['Tuya · Clim','Connecté']],n=rowsCount(bh,26,5);
+   return it.slice(0,n).map(([a,b])=>`<div class="deviceRow" style="height:26px"><span class="dot ok"></span><span class="nm">${a}</span><small>${b}</small></div>`).join('')}
+  case'history':return `<div class="watts"><strong>184 W</strong><small>maintenant · 24 h</small></div><div class="chartbox"><svg viewBox="0 0 300 50" preserveAspectRatio="none"><path class="area" d="M0 42 L14 36 28 38 43 29 58 34 73 19 88 27 103 20 118 28 133 15 148 22 163 19 178 27 193 12 208 18 223 9 238 22 253 16 270 18 285 7 300 12 L300 50 0 50Z"/><path class="line" d="M0 42 L14 36 28 38 43 29 58 34 73 19 88 27 103 20 118 28 133 15 148 22 163 19 178 27 193 12 208 18 223 9 238 22 253 16 270 18 285 7 300 12"/></svg></div>`;
+  case'activity':{const it=[['Scène « Détente »','20:14'],['Suspension séjour allumée','19:52'],['Prise Verres · 42 W','19:30'],['Clim mobile · 21°','18:05']],n=rowsCount(bh,26,5);
+   return it.slice(0,n).map(([a,b])=>`<div class="deviceRow" style="height:26px"><span class="nm">${a}</span><small>${b}</small></div>`).join('')}
+  case'schedule':{const it=[['Scène « Nuit »','23:00'],['Clim off','07:30'],['Scène « Départ »','08:15']],n=rowsCount(bh,26,5);
+   return it.slice(0,n).map(([a,b])=>`<div class="deviceRow" style="height:26px"><span class="nm">${a}</span><small>${b}</small></div>`).join('')}
+  case'weather':return `<div class="metrics">${metric('MAINTENANT','14° ☁','','Prévisions à connecter',tall)}${metric('DEMAIN','12°','','Service météo à ajouter',tall)}</div>`;
+  case'airquality':return `<div class="metrics">${metric('CO₂ · '+rmU,'742','ppm','Qualité bonne',tall)}${metric('HUMIDITÉ','46','%','Plage confort',tall)}</div>`;
+  case'roomtemp':return `<div class="metrics">${metric(rmU,'21,4°','','Capteur Netatmo · confort',tall)}</div>`;
+  case'shortcut':return `<div class="chips${tall?'':' inline'}">${['⏻|Tout éteindre','↗|Départ','❄|Clim off'].map((s,i)=>{const[ic,l]=s.split('|');return `<button data-act="shortcut" data-i="${i}"><span>${ic}</span>${l}</button>`}).join('')}</div>`;
+ }
+ return '';
+}
+
+/* ───────── Cartes widgets ───────── */
+const cards=new Map();
+function makeCard(slot){
+ const t=TYPES[slot.type],el=document.createElement('article');
+ el.className='widget'+(t.group==='proposed'?' proposed':'');el.dataset.id=slot.id;
+ el.innerHTML=`<div class="wh"><span class="wIcon">${t.icon}</span><b title="${t.name}">${t.name}</b>${t.group==='proposed'?'<em class="tag">PROPOSÉ</em>':''}<div class="wa"><button class="cfg" title="Configurer" aria-label="Configurer ${t.name}">⚙</button><button class="rm" title="Retirer" aria-label="Retirer ${t.name}">×</button></div></div><div class="wb"></div><div class="colHandle" role="separator" aria-orientation="vertical" tabindex="0" aria-label="Largeur de ${t.name}" title="Tirer pour ajuster la largeur">⋮</div><div class="rowHandle" role="separator" aria-orientation="horizontal" tabindex="0" aria-label="Hauteur de ${t.name}" title="Tirer le bord inférieur pour ajuster la hauteur"><span></span></div>`;
+ el.querySelector('.cfg').addEventListener('click',()=>openConfig(slot.id));
+ el.querySelector('.rm').addEventListener('click',()=>removeSlot(slot.id));
+ el.querySelector('.wb').addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(b)act(b,slot)});
+ for(const [sel,axis] of [['.colHandle','w'],['.rowHandle','h']]){
+  const hd=el.querySelector(sel);
+  hd.addEventListener('pointerdown',e=>startResize(e,slot,axis,el));
+  hd.addEventListener('keydown',e=>keyResize(e,slot,axis,el));
+ }
+ return el;
+}
+function act(b,slot){
+ const a=b.dataset.act;
+ if(a==='dev')toggleDevice(b.dataset.id);
+ else if(a==='clim'){slot.on=slot.on===false;toast(`Climatisation ${slot.on?'activée':'arrêtée'} · simulation`);commit()}
+ else if(a==='scene'){slot.scene=+b.dataset.i;toast('Scène activée · simulation');commit()}
+ else if(a==='shortcut'){const i=+b.dataset.i;
+  if(i<2){for(const d of DEVICES)state.on[d.id]=false;toast(i?'Mode départ · tout est éteint · simulation':'Tout est éteint · simulation')}else toast('Climatisation éteinte · simulation');
+  commit()}
+}
+function toggleDevice(id){const d=DEVICES.find(x=>x.id===id);if(!d)return;state.on[id]=!isOn(d);toast(`${d.name} ${state.on[id]?'activé':'éteint'} · simulation`);commit()}
+function fillBody(el,slot,h){
+ const bh=h-52,sig=[slot.type,slot.room,slot.on,slot.scene,rev,bh].join('|');
+ if(el._sig===sig)return;el._sig=sig;el.querySelector('.wb').innerHTML=body(slot,bh);
+}
+
+/* ───────── Mise en page ───────── */
+let lastHidden=0;
+function layout(){
+ const heroW=curHeroW(),m=metrics(heroW);
+ hero.style.width=heroW+'px';
+ splitter.setAttribute('aria-valuenow',String(Math.round(100*heroW/stage.clientWidth)));
+ const res=pack(slots,m,true),placed=new Map(res.placements.map(p=>[p.slot.id,p]));
+ let hidden=0;
+ for(const [id,el] of cards)if(!slots.some(s=>s.id===id)){el.remove();cards.delete(id)}
+ for(const slot of slots){
+  let el=cards.get(slot.id);if(!el){el=makeCard(slot);cards.set(slot.id,el);layer.append(el)}
+  const p=placed.get(slot.id);
+  if(!p){el.hidden=true;hidden++;continue}
+  el.hidden=false;
+  const reg=m[p.region],w=p.span*reg.cw+(p.span-1)*G,h=p.rows*R-G;
+  Object.assign(el.style,{left:reg.ox+p.col*(reg.cw+G)+'px',top:reg.oy+p.row*R+'px',width:w+'px',height:h+'px'});
+  el.dataset.narrow=w<300?'1':'';
+  slot._span=p.span;slot._rows=p.rows;slot._min=p.minSpan;slot._minR=p.minR;slot._region=p.region;slot._maxR=m[p.region].rows;
+  fillBody(el,slot,h);
+ }
+ if(hidden!==lastHidden&&hidden>0)toast(`${hidden} widget${hidden>1?'s':''} masqué${hidden>1?'s':''} : écran trop petit`);
+ lastHidden=hidden;
+ // emplacement libre « + Ajouter un widget »
+ const fr=hidden===0?freeRect(res.occ,m):null;
+ if(fr){const reg=m[fr.region];addslot.hidden=false;
+  Object.assign(addslot.style,{left:reg.ox+fr.col*(reg.cw+G)+'px',top:reg.oy+fr.row*R+'px',width:fr.span*reg.cw+(fr.span-1)*G+'px',height:fr.rows*R-G+'px'})}
+ else addslot.hidden=true;
+ const can=hidden===0&&canAddAny(),btn=$('#openCatalog');
+ btn.disabled=!can;btn.title=can?'Ajouter un widget':'Plus de place : réduisez ou retirez un widget';
+}
+function commit(){rev++;save();updatePlans();renderRoomInfo();layout()}
+
+/* ───────── Redimensionnement des widgets ───────── */
+function startResize(e,slot,axis,card){
+ if(e.button!==undefined&&e.button!==0)return;
+ e.preventDefault();e.stopPropagation();
+ const hd=e.currentTarget,key=axis,m=metrics(),reg=m[slot._region],unit=axis==='w'?reg.cw+G:R,start=axis==='w'?slot._span:slot._rows,sx=e.clientX,sy=e.clientY;
+ let cur=start;
+ hd.setPointerCapture(e.pointerId);stage.classList.add('resizing');card.classList.add('active');
+ const lo=axis==='w'?slot._min:slot._minR,hi=axis==='w'?COLS:slot._maxR;
+ const move=ev=>{
+  const target=clamp(start+Math.round(((axis==='w'?ev.clientX-sx:ev.clientY-sy))/unit),lo,hi);
+  let blocked=false;
+  while(cur!==target){const next=cur+Math.sign(target-cur);if(resizeTo(slot,key,next))cur=next;else{blocked=true;break}}
+  card.classList.toggle('blocked',blocked);
+  layout();
+ };
+ const end=()=>{
+  hd.removeEventListener('pointermove',move);hd.removeEventListener('pointerup',end);hd.removeEventListener('pointercancel',end);
+  stage.classList.remove('resizing');card.classList.remove('active','blocked');
+  save();layout();toast(axis==='w'?'Largeur enregistrée':'Hauteur enregistrée');
+ };
+ hd.addEventListener('pointermove',move);hd.addEventListener('pointerup',end);hd.addEventListener('pointercancel',end);
+}
+function keyResize(e,slot,axis,card){
+ const dir=axis==='w'?{ArrowRight:1,ArrowLeft:-1}[e.key]:{ArrowDown:1,ArrowUp:-1}[e.key];
+ if(!dir)return;e.preventDefault();
+ const cur=axis==='w'?slot._span:slot._rows,lo=axis==='w'?slot._min:slot._minR,hi=axis==='w'?COLS:slot._maxR,next=cur+dir;
+ if(next<lo||next>hi||!resizeTo(slot,axis,next)){card.classList.add('blocked');setTimeout(()=>card.classList.remove('blocked'),500);toast('Taille limite pour l’espace disponible');return}
+ save();layout();
+}
+
+/* ───────── Séparateur plan / widgets ───────── */
+let dragSplit=false;
+const fitsHero=w=>pack(slots,metrics(w)).ok;
+function moveHero(target){
+ const b=heroBounds();target=clamp(Math.round(target),b.min,b.max);
+ let cur=curHeroW(),blocked=false;
+ while(cur!==target){const next=cur+Math.sign(target-cur)*Math.min(4,Math.abs(target-cur));if(fitsHero(next))cur=next;else{blocked=true;break}}
+ state.frac=cur/stage.clientWidth;splitter.classList.toggle('blocked',blocked);layout();
+}
+splitter.addEventListener('pointerdown',e=>{dragSplit=true;splitter.setPointerCapture(e.pointerId);splitter.classList.add('dragging');stage.classList.add('dragging-split')});
+splitter.addEventListener('pointermove',e=>{if(dragSplit)moveHero(e.clientX-stage.getBoundingClientRect().left-SPL/2)});
+const endSplit=()=>{if(!dragSplit)return;dragSplit=false;splitter.classList.remove('dragging','blocked');stage.classList.remove('dragging-split');save()};
+splitter.addEventListener('pointerup',endSplit);splitter.addEventListener('pointercancel',endSplit);
+splitter.addEventListener('dblclick',()=>{moveHero(.56*stage.clientWidth);save();toast('Disposition réinitialisée')});
+splitter.addEventListener('keydown',e=>{
+ if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();moveHero(curHeroW()+(e.key==='ArrowLeft'?-24:24));save()}
+ else if(e.key==='Home'){e.preventDefault();moveHero(.56*stage.clientWidth);save()}
+});
+
+/* ───────── Catalogue / configuration ───────── */
+const catalog=$('#catalog'),config=$('#config');let editingId=null;
+function openCatalog(){
+ const ex=$('#existingChoices'),pr=$('#proposedChoices');ex.innerHTML='';pr.innerHTML='';
+ for(const [id,t] of Object.entries(TYPES)){
+  const cand=tryAdd(id),b=document.createElement('button');
+  b.className='choice'+(t.group==='proposed'?' proposed':'');b.disabled=!cand;
+  b.innerHTML=`<div class="ci">${t.icon}</div><b>${t.name}<span class="badge ${t.group==='proposed'?'pr':''}">${t.group==='existing'?'DISPONIBLE':'FUTUR'}</span></b><small>${t.desc}${cand?'':'<br><span class="warn">Pas assez de place à cette taille</span>'}</small>`;
+  b.addEventListener('click',()=>{
+   const s=tryAdd(id);if(!s){toast('Plus assez de place pour ce widget');return}
+   slots.push(s);catalog.classList.remove('open');commit();
+   toast(`${t.name} ajouté${s.w!=null||s.h!=null?' · taille adaptée à l’espace':''}`);
+  });
+  (t.group==='existing'?ex:pr).append(b);
+ }
+ catalog.classList.add('open');
+}
+function openConfig(id){
+ const s=slots.find(x=>x.id===id);if(!s)return;editingId=id;
+ const sel=$('#roomSelect');sel.innerHTML=ROOM_NAMES.map(r=>`<option>${r}</option>`).join('');sel.value=s.room;sel.disabled=!TYPES[s.type].room;
+ $('#configTitle').textContent='Configurer · '+TYPES[s.type].name;config.classList.add('open');
+}
+function removeSlot(id){const t=TYPES[slots.find(s=>s.id===id)?.type];slots=slots.filter(s=>s.id!==id);state.slots=slots;commit();toast(`${t?.name||'Widget'} retiré · les autres widgets se réorganisent`)}
+$('#openCatalog').addEventListener('click',openCatalog);
+addslot.addEventListener('click',openCatalog);
+$('#closeCatalog').addEventListener('click',()=>catalog.classList.remove('open'));
+catalog.addEventListener('click',e=>{if(e.target===catalog)catalog.classList.remove('open')});
+config.addEventListener('click',e=>{if(e.target===config)config.classList.remove('open')});
+$('#cancelConfig').addEventListener('click',()=>config.classList.remove('open'));
+$('#saveConfig').addEventListener('click',()=>{const s=slots.find(x=>x.id===editingId);if(s&&TYPES[s.type].room)s.room=$('#roomSelect').value;config.classList.remove('open');commit();toast('Widget configuré')});
+$('#removeWidget').addEventListener('click',()=>{config.classList.remove('open');removeSlot(editingId)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){catalog.classList.remove('open');config.classList.remove('open')}});
+
+/* ───────── Plans 2D / 3D ───────── */
+const P=(x,y,z=0)=>[.5*x+.36*y,.14*x-.22*y-z];
+const pts=a=>a.map(([x,y,z])=>P(x,y,z||0).map(n=>n.toFixed(1)).join(',')).join(' ');
+const poly=(cls,a,extra='')=>`<polygon class="${cls}" points="${pts(a)}" ${extra}/>`;
+function box(b){
+ const{x,y,w,d,h,z0=0,cls=''}=b,z1=z0+h;
+ return `<g class="bx ${cls}">${poly('f',[[x,y,z0],[x+w,y,z0],[x+w,y,z1],[x,y,z1]])}${poly('r',[[x+w,y,z0],[x+w,y+d,z0],[x+w,y+d,z1],[x+w,y,z1]])}${poly('t',[[x,y,z1],[x+w,y,z1],[x+w,y+d,z1],[x,y+d,z1]])}</g>`;
+}
+const devShape=(d,r)=>d.kind==='light'?`<circle class="dv" r="${r}"/>`:`<rect class="dv" x="${-r}" y="${-r}" width="${2*r}" height="${2*r}" rx="${r/2.5}"/>`;
+function build3D(){
+ const WH=38,out=[];
+ out.push(`<polygon class="gl3" points="${pts([[0,0],[650,0],[650,830],[130,830],[130,330],[0,330]])}"/>`);
+ out.push(poly('slab',[[0,0,0],[650,0,0],[650,0,-14],[0,0,-14]]),poly('slab',[[650,0,0],[650,830,0],[650,830,-14],[650,0,-14]]));
+ out.push(poly('wB',[[0,0,0],[0,330,0],[0,330,WH],[0,0,WH]]),poly('wA',[[0,330,0],[130,330,0],[130,330,WH],[0,330,WH]]),poly('wB',[[130,330,0],[130,830,0],[130,830,WH],[130,330,WH]]),poly('wA',[[130,830,0],[650,830,0],[650,830,WH],[130,830,WH]]));
+ for(const[ax,c,a,b,z0,z1]of WINDOWS){
+  const q=ax==='y'?[[a,c,z0],[b,c,z0],[b,c,z1],[a,c,z1]]:[[c,a,z0],[c,b,z0],[c,b,z1],[c,a,z1]],mid=(a+b)/2,zm=(z0+z1)/2;
+  out.push(poly('win',q));
+  out.push(`<polyline fill="none" stroke="#d7f8ff" stroke-width="1" points="${ax==='y'?pts([[mid,c,z0],[mid,c,z1]]):pts([[c,mid,z0],[c,mid,z1]])}"/>`);
+ }
+ for(const r of ROOMS)out.push(poly('rs',[[r.x,r.y],[r.x+r.w,r.y],[r.x+r.w,r.y+r.h],[r.x,r.y+r.h]],`data-room="${r.id}"`));
+ out.push(poly('wA',[[0,0,0],[650,0,0],[650,0,10],[0,0,10]]),poly('wB',[[650,0,0],[650,830,0],[650,830,10],[650,0,10]]));
+ for(const f of [...FURN].sort((a,b)=>(.14*(a.x+a.w/2)-.22*(a.y+a.d/2))-(.14*(b.x+b.w/2)-.22*(b.y+b.d/2))||(a.z0||0)-(b.z0||0)))out.push(box(f));
+ for(const d of DEVICES){const[px,py]=P(d.x,d.y,0);out.push(`<g class="dev ${d.kind}" data-dev="${d.id}" transform="translate(${px.toFixed(1)} ${py.toFixed(1)})"><title>${d.name}</title><circle class="hit" r="14"/>${devShape(d,7)}</g>`)}
+ for(const r of ROOMS)if(r.l3){const[px,py]=P(r.l3[0],r.l3[1],0);out.push(`<text class="lbl ${r.fs}" x="${px.toFixed(1)}" y="${py.toFixed(1)}">${r.id.toUpperCase()}</text>`)}
+ return out.join('');
+}
+function build2D(){
+ const out=[`<path d="M0 0H650V830H130V330H0Z" fill="none" stroke="#f05fc0" stroke-width="7" stroke-linejoin="round" opacity=".55" filter="url(#glow)" pointer-events="none"/>`];
+ for(const r of ROOMS)out.push(`<rect class="rs" data-room="${r.id}" x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}"/>`);
+ for(const f of FURN)out.push(`<rect class="fr ${f.cls==='soft'?'soft':''}" x="${f.x}" y="${f.y}" width="${f.w}" height="${f.d}" rx="8"/>`);
+ for(const r of ROOMS){
+  const cx=r.x+r.w/2,top=r.h<60?r.y+r.h/2+5:r.y+r.h*(r.h>300?.3:.32);
+  out.push(`<text class="lbl ${r.fs}" x="${cx}" y="${top}">${r.id.toUpperCase()}</text>`);
+  if(r.area)out.push(`<text class="sq" x="${cx}" y="${top+22}">${r.area} m²</text>`);
+ }
+ for(const d of DEVICES)out.push(`<g class="dev ${d.kind}" data-dev="${d.id}" transform="translate(${d.x} ${d.y})"><title>${d.name}</title><circle class="hit" r="28"/>${devShape(d,d.kind==='light'?13:11)}</g>`);
+ return out.join('');
+}
+const svg3=$('#plan3d'),svg2=$('#plan2d'),view2d=$('#view2d'),roomInfo=$('#roomInfo');
+svg3.innerHTML=build3D();svg2.innerHTML=build2D();
+function updatePlans(){
+ document.querySelectorAll('[data-room]').forEach(n=>n.classList.toggle('sel',n.dataset.room===state.room));
+ document.querySelectorAll('[data-dev]').forEach(n=>{const d=DEVICES.find(x=>x.id===n.dataset.dev);n.classList.toggle('on',isOn(d))});
+ const r=ROOMS.find(x=>x.id===state.room),ds=DEVICES.filter(d=>d.room===r.id),on=ds.filter(isOn).length;
+ $('#selInfo').textContent=`${r.id}${r.area?' · '+r.area+' m²':''} · ${ds.length} équipement${ds.length>1?'s':''}${ds.length?` (${on} actif${on>1?'s':''})`:''}`;
+ $('#devCount').textContent=DEVICES.length;
+}
+function renderRoomInfo(){
+ const r=ROOMS.find(x=>x.id===state.room),ds=DEVICES.filter(d=>d.room===r.id);
+ roomInfo.innerHTML=`<div class="eyebrow">PIÈCE SÉLECTIONNÉE</div><h3>${r.id}</h3><p>${r.area?r.area+' m² · ':''}${ds.length} équipement${ds.length>1?'s':''}</p><div class="rows">${ds.map(devRow).join('')||'<div class="hint">Aucun équipement dans cette pièce</div>'}</div>`;
+}
+roomInfo.addEventListener('click',e=>{const b=e.target.closest('[data-act="dev"]');if(b)toggleDevice(b.dataset.id)});
+function onPlanClick(e){
+ const dv=e.target.closest('[data-dev]');if(dv){toggleDevice(dv.dataset.dev);return}
+ const rm=e.target.closest('[data-room]');if(rm){state.room=rm.dataset.room;save();updatePlans();renderRoomInfo();toast(state.room+' sélectionné')}
+}
+svg3.addEventListener('click',onPlanClick);svg2.addEventListener('click',onPlanClick);
+function setMode(mode){
+ state.mode=mode;const d3=mode==='3d';
+ svg3.toggleAttribute('hidden',!d3);view2d.toggleAttribute('hidden',d3);
+ document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('selected',b.dataset.mode===mode));
+ $('#heroTitle').textContent=d3?'Vue 3D interactive':'Plan 2D interactif';
+ $('#planHint').textContent=d3?'Touchez une pièce ou un équipement':'Touchez une pièce pour voir ses équipements';
+}
+document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{setMode(b.dataset.mode);save()}));
+
+/* ───────── En-tête ───────── */
+document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');toast(`Vue « ${b.dataset.tab} » (aperçu)`)}));
+$('#settings').addEventListener('click',()=>toast('Réglages de la maison · aperçu'));
+function tick(){const d=new Date(),day=d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});$('#clock').innerHTML=d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})+'<small>'+day.charAt(0).toUpperCase()+day.slice(1)+'</small>'}
+tick();setInterval(tick,15000);
+
+/* ───────── Démarrage ───────── */
+setMode(state.mode);updatePlans();renderRoomInfo();layout();
+new ResizeObserver(layout).observe(stage);
+window.__orion={slots:()=>slots,metrics,pack,state};
+})();
+</script>
+</body>
+</html>

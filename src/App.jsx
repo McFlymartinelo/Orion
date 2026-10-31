@@ -1,13 +1,9 @@
-import { lazy, Suspense, useEffect } from 'react';
+import { useEffect, useLayoutEffect } from 'react';
 import Header from './components/Header';
-import FloorPlanSVG from './components/FloorPlanSVG';
-import FloorPlanModeToggle from './components/FloorPlanModeToggle';
-import FloorPlan3DBoundary from './components/FloorPlan3DBoundary';
-import SidePanel from './components/SidePanel';
+import Dashboard from './components/Dashboard';
 import FullscreenPrompt from './components/FullscreenPrompt';
 import useOrionStore from './store/useOrionStore';
-
-const FloorPlan3D = lazy(() => import('./components/FloorPlan3D'));
+import useLayoutStore from './store/useLayoutStore';
 
 const NETATMO_POLL_INTERVAL_MS = 5 * 60 * 1000; // Netatmo ne rafraîchit ses capteurs que toutes les ~5-10 min
 const TUYA_POLL_INTERVAL_MS = 2 * 60 * 1000; // état clim Tuya (éviter le rate-limit 412)
@@ -17,7 +13,7 @@ const ALEXA_POLL_INTERVAL_MS = 2 * 60 * 1000; // Echo (volume / DND via API Amaz
 const HUE_POLL_INTERVAL_MS = 30 * 1000; // état réel des lampes Hue (bridge local)
 
 export default function App() {
-  const floorPlanMode = useOrionStore((s) => s.floorPlanMode);
+  const theme = useLayoutStore((s) => s.theme);
   const syncNetatmo = useOrionStore((s) => s.syncNetatmo);
   const syncTuyaStatus = useOrionStore((s) => s.syncTuyaStatus);
   const syncKasaStatus = useOrionStore((s) => s.syncKasaStatus);
@@ -25,6 +21,11 @@ export default function App() {
   const syncAlexaStatus = useOrionStore((s) => s.syncAlexaStatus);
   const syncHueStatus = useOrionStore((s) => s.syncHueStatus);
   const syncHueScenes = useOrionStore((s) => s.syncHueScenes);
+
+  // Thème actif posé sur <html> : les variables CSS (index.css) s'adaptent.
+  useLayoutEffect(() => {
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
 
   useEffect(() => {
     syncNetatmo();
@@ -86,43 +87,20 @@ export default function App() {
   }, [syncHueScenes]);
 
   return (
-    <div className="relative flex h-dvh w-full flex-col overflow-hidden bg-[#050608] text-slate-100">
+    <div className="orion-root relative flex h-dvh w-full items-center justify-center overflow-hidden text-slate-100">
       <FullscreenPrompt />
 
       {/* Ambiance de fond */}
-      <div className="pointer-events-none fixed inset-0 -z-10">
+      <div className="orion-ambient pointer-events-none fixed inset-0 -z-10">
         <div className="absolute -left-40 -top-40 h-[520px] w-[520px] rounded-full bg-sky-500/10 blur-[120px]" />
         <div className="absolute -bottom-40 right-0 h-[480px] w-[480px] rounded-full bg-purple-500/10 blur-[120px]" />
       </div>
 
-      <Header />
-
-      <main className="flex min-h-0 flex-1">
-        <section className="relative min-h-0 w-1/2 p-4 pr-2">
-          <div className="relative h-full w-full overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] p-3 backdrop-blur-md">
-            <FloorPlanModeToggle />
-            {floorPlanMode === '3d' ? (
-              <FloorPlan3DBoundary>
-                <Suspense
-                  fallback={
-                    <div className="flex h-full items-center justify-center text-sm text-slate-400">
-                      Préparation de la vue 3D…
-                    </div>
-                  }
-                >
-                  <FloorPlan3D />
-                </Suspense>
-              </FloorPlan3DBoundary>
-            ) : (
-              <FloorPlanSVG />
-            )}
-          </div>
-        </section>
-
-        <section className="relative flex min-h-0 w-1/2 flex-col overflow-hidden">
-          <SidePanel />
-        </section>
-      </main>
+      {/* Cadre tablette 10″ : 1280 × 800 maximum, sans défilement de page */}
+      <div className="orion-frame relative flex h-[min(800px,100dvh)] w-[min(1280px,100vw)] flex-col overflow-hidden">
+        <Header />
+        <Dashboard />
+      </div>
     </div>
   );
 }

@@ -86,7 +86,7 @@ export default function FullscreenPrompt() {
   if (!visible) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#050608]/92 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[var(--orion-bg)]/92 backdrop-blur-sm">
       <div className="mx-6 max-w-md text-center">
         <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-sky-400/40 bg-sky-400/10">
           <Maximize2 className="text-sky-300" size={28} strokeWidth={1.8} />

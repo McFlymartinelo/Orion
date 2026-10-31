@@ -23,10 +23,10 @@ function WindowMarks({ room }) {
   const cy = room.y + room.h / 2;
   const wx = room.x;
   return (
-    <g stroke="rgba(148,197,255,0.45)" strokeWidth={2}>
+    <g stroke="var(--plan-glass)" strokeWidth={2}>
       <line x1={wx - 6} x2={wx + 6} y1={cy - 22} y2={cy - 22} />
       <line x1={wx - 6} x2={wx + 6} y1={cy + 22} y2={cy + 22} />
-      <line x1={wx} x2={wx} y1={cy - 22} y2={cy + 22} stroke="rgba(5,6,8,0.9)" strokeWidth={4} />
+      <line x1={wx} x2={wx} y1={cy - 22} y2={cy + 22} stroke="var(--plan-wall-gap)" strokeWidth={4} />
     </g>
   );
 }
@@ -42,12 +42,12 @@ function RoomShape({ room }) {
         y={room.y}
         width={room.w}
         height={room.h}
-        fill={isBalcon ? 'url(#balconFill)' : isSmall ? 'rgba(30,41,59,0.4)' : 'url(#roomFill)'}
-        stroke="rgba(148,163,184,0.28)"
+        fill={isBalcon ? 'url(#balconFill)' : isSmall ? 'var(--plan-small)' : 'url(#roomFill)'}
+        stroke="var(--plan-room-stroke)"
         strokeWidth={2}
       />
       {isBalcon && (
-        <g stroke="rgba(148,197,255,0.4)" strokeWidth={2}>
+        <g stroke="var(--plan-glass)" strokeWidth={2}>
           {room.w >= room.h
             ? // Mur extérieur en haut (large et bas) : garde-corps horizontal.
               Array.from({ length: Math.max(2, Math.floor((room.w - 20) / 32) + 1) }).map((_, i) => (
@@ -79,7 +79,7 @@ function RoomShape({ room }) {
         fontSize={isTiny ? 9 : isSmall ? 10.5 : 13}
         fontWeight={600}
         letterSpacing="1.2"
-        fill="rgba(226,232,240,0.55)"
+        fill="var(--plan-label)"
         style={{ textTransform: 'uppercase', fontFamily: 'var(--font-sans)' }}
       >
         {room.name}
@@ -90,7 +90,7 @@ function RoomShape({ room }) {
           y={room.labelY + 15}
           textAnchor="middle"
           fontSize={9.5}
-          fill="rgba(148,163,184,0.4)"
+          fill="var(--plan-sub)"
         >
           {room.surface} m²
         </text>
@@ -134,7 +134,7 @@ function RoomLightToggle({ room, lights, onToggle }) {
       </title>
       <circle
         r={r + 3}
-        fill={anyOn ? 'rgba(250,204,21,0.12)' : 'rgba(15,23,42,0.55)'}
+        fill={anyOn ? 'rgba(250,204,21,0.12)' : 'var(--plan-btn-off)'}
         stroke={anyOn ? 'rgba(250,204,21,0.55)' : 'rgba(148,163,184,0.35)'}
         strokeWidth={1.5}
         filter={anyOn ? 'url(#softGlow)' : undefined}
@@ -182,12 +182,12 @@ export default function FloorPlanSVG() {
       <svg viewBox={`0 0 ${VIEW_BOX.w} ${VIEW_BOX.h}`} className="h-full w-full select-none" preserveAspectRatio="xMidYMid meet">
         <defs>
           <linearGradient id="roomFill" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="rgba(30,41,59,0.55)" />
-            <stop offset="100%" stopColor="rgba(15,23,42,0.55)" />
+            <stop offset="0%" stopColor="var(--plan-room-a)" />
+            <stop offset="100%" stopColor="var(--plan-room-b)" />
           </linearGradient>
           <linearGradient id="balconFill" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="rgba(15,118,110,0.18)" />
-            <stop offset="100%" stopColor="rgba(15,23,42,0.35)" />
+            <stop offset="0%" stopColor="var(--plan-balcon-a)" />
+            <stop offset="100%" stopColor="var(--plan-balcon-b)" />
           </linearGradient>
           <filter id="softGlow" x="-60%" y="-60%" width="220%" height="220%">
             <feGaussianBlur stdDeviation="3" result="blur" />
@@ -199,7 +199,7 @@ export default function FloorPlanSVG() {
         </defs>
 
         {/* Enveloppe extérieure du logement */}
-        <path d={OUTER_PATH} fill="none" stroke="rgba(56,189,248,0.55)" strokeWidth={4} strokeLinejoin="round" />
+        <path d={OUTER_PATH} fill="none" stroke="var(--plan-outline)" strokeWidth={4} strokeLinejoin="round" />
 
         {/* Pièces */}
         {rooms.map((room) => (
