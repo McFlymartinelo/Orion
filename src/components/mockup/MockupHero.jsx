@@ -2,15 +2,15 @@ import FloorPlanPanel from '../FloorPlanPanel';
 import useOrionStore from '../../store/useOrionStore';
 
 /**
- * Cadre du plan du thème « Maquette » (titre, boutons 2D/3D, pied de carte).
- * La vue 2D/3D à l'intérieur reste celle du thème classique (FloorPlanPanel).
+ * Cadre du plan du thème « Maquette » (titre, modes d’affichage, pied de carte).
+ * Les vues à l'intérieur restent celles du thème classique (FloorPlanPanel).
  */
 export default function MockupHero() {
   const mode = useOrionStore((s) => s.floorPlanMode);
   const setMode = useOrionStore((s) => s.setFloorPlanMode);
   const deviceCount = useOrionStore((s) => Object.values(s.devices).filter((d) => !d.hiddenOnMap).length);
   const selectedName = useOrionStore((s) => (s.selectedDeviceId ? s.devices[s.selectedDeviceId]?.name : null));
-  const is3d = mode === '3d';
+  const modeTitle = mode === '3d' ? 'Vue 3D interactive' : mode === 'render' ? 'Rendu de l’appartement' : 'Plan 2D interactif';
 
   return (
     <section className="relative flex h-full w-full flex-col overflow-hidden rounded-[20px] border border-[#53507888] bg-[radial-gradient(ellipse_at_50%_48%,#343050_0,#20203d_43%,#17182d_100%)] shadow-[0_18px_60px_#0004,inset_0_0_70px_#ac47ff0a]">
@@ -27,13 +27,17 @@ export default function MockupHero() {
 
       <div className="relative z-[2] flex shrink-0 items-center justify-between px-[18px] pt-3.5">
         <div>
-          <h2 className="m-0 text-[13px] font-bold">{is3d ? 'Vue 3D interactive' : 'Plan 2D interactif'}</h2>
+          <h2 className="m-0 text-[13px] font-bold">{modeTitle}</h2>
           <small className="mt-1 block text-[10px] text-[#a4a6c1]">
-            {is3d ? 'Touchez une pièce ou un équipement' : 'Touchez un équipement pour le piloter'}
+            {mode === '3d'
+              ? 'Touchez une pièce ou un équipement'
+              : mode === 'render'
+                ? 'Vue d’ambiance de l’appartement'
+                : 'Touchez un équipement pour le piloter'}
           </small>
         </div>
         <div role="group" aria-label="Mode d’affichage" className="flex gap-1.5">
-          {['2d', '3d'].map((m) => (
+          {['2d', '3d', 'render'].map((m) => (
             <button
               key={m}
               type="button"
@@ -45,7 +49,7 @@ export default function MockupHero() {
                   : 'border-[#ffffff20] bg-[#14172bc9] text-[#c9cce0]'
               }`}
             >
-              {m.toUpperCase()}
+              {m === 'render' ? 'RENDU' : m.toUpperCase()}
             </button>
           ))}
         </div>
