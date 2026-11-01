@@ -118,8 +118,8 @@ export default function App() {
         <div className="absolute -bottom-40 right-0 h-[480px] w-[480px] rounded-full bg-purple-500/10 blur-[120px]" />
       </div>
 
-      {/* Cadre tablette 10″ : 1280 × 800 maximum, sans défilement de page */}
-      <div className="orion-frame relative flex h-[min(800px,100dvh)] w-[min(1280px,100vw)] flex-col overflow-hidden">
+      {/* L’interface occupe l’écran sur tablette et ordinateur, sans cadre fixe. */}
+      <div className="orion-frame relative flex h-full w-full max-w-[1920px] flex-col overflow-hidden">
         <Header />
         {page === 'rooms' ? <RoomsPage /> : page === 'energy' ? <EnergyPage /> : <Dashboard />}
       </div>

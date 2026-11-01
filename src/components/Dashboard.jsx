@@ -45,7 +45,10 @@ export default function Dashboard() {
   const widgets = useLayoutStore((s) => s.widgets);
   const heroFrac = useLayoutStore((s) => s.heroFrac);
   const mockup = useLayoutStore((s) => s.theme) === 'mockup';
-  const heroH = mockup ? HERO_H.mockup : HERO_H.orion;
+  // Le plan grandit avec la hauteur disponible, sans prendre toute la place des widgets.
+  const heroH = size.h
+    ? Math.round(Math.max(HERO_H[mockup ? 'mockup' : 'orion'] * 0.9, Math.min(560, size.h * 0.54)))
+    : HERO_H[mockup ? 'mockup' : 'orion'];
 
   const showToast = useCallback((message) => {
     setToast(message);
