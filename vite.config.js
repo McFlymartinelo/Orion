@@ -57,8 +57,18 @@ export default defineConfig({
             handler: 'NetworkOnly',
           },
           {
+            // GLB compressé (~7 Mo) : cache-first pour que la 3D marche hors-ligne.
+            // Pas de precache (globIgnores) : on ne veut pas embarquer les 95 Mo
+            // d'export Sweet Home 3D (.obj/.mtl/textures) encore présents.
+            // ⚠ Incrémenter le nom du cache (v1 → v2) à chaque nouvel export du GLB,
+            // sinon l'ancien modèle reste servi indéfiniment.
             urlPattern: ({ url }) => url.pathname.startsWith('/models/'),
-            handler: 'NetworkOnly',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'orion-models-v1',
+              expiration: { maxEntries: 8, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
           },
         ],
       },
@@ -75,6 +85,10 @@ export default defineConfig({
     port: 5173,
     strictPort: false,
     https: true,
+    // Export brut Sweet Home 3D (88 Mo) : hors build, et hors watcher (EBUSY).
+    watch: {
+      ignored: ['**/model-source/**'],
+    },
     proxy: {
       // Redirige les appels /api/* du frontend vers le petit serveur Express
       // (server/index.js) qui gère l'authentification Netatmo côté serveur.

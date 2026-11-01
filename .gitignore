@@ -32,6 +32,7 @@ server/.alexa-cookie.json
 
 dev-dist/
 
-# Export Sweet Home 3D brut (~90 Mo) — rester local
+# Export Sweet Home 3D brut (~88 Mo) — rester local
+model-source/
 public/models/appart/*.obj
-public/models/appart/*.glb
+# Le GLB compressé (~7 Mo) est versionné : sans lui, la vue 3D est vide.

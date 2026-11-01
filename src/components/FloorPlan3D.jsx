@@ -1,18 +1,50 @@
 import { Suspense, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
-import { ContactShadows, Environment, Html, OrbitControls, useGLTF, useProgress } from '@react-three/drei';
+import { Environment, Html, OrbitControls, useGLTF, useProgress } from '@react-three/drei';
+import { Bloom, EffectComposer, N8AO, Vignette } from '@react-three/postprocessing';
+import { RectAreaLightUniformsLib } from 'three/addons/lights/RectAreaLightUniformsLib.js';
 import * as THREE from 'three';
 import useOrionStore from '../store/useOrionStore';
 import { DEVICE_TYPES, LIGHT_DEVICE_TYPES, VIEW_BOX } from '../data/mockData';
 import { DeviceIcon } from './DeviceShapes';
+import ApartmentLamps from './ApartmentLamps';
+import { createWoodTexture } from '../utils/floorTexture';
+import { createPlasterTexture } from '../utils/plasterTexture';
 
 const GLB_URL = '/models/appart/appart.glb';
+/** Décodeur Draco servi en local (public/draco) : la PWA doit marcher hors-ligne. */
+const DRACO_PATH = '/draco/';
+
+// RectAreaLight exige l'initialisation des LTC uniforms (une seule fois).
+RectAreaLightUniformsLib.init();
 
 /** Sweet Home 3D exporte en centimètres, Y = hauteur. */
 const CM_TO_M = 0.01;
 const CEILING_Y_CM = 200;
 const CEILING_THICKNESS_CM = 28;
 const ICON_HEIGHT_M = 1.35; // fallback générique
+
+/** Meshes nommés par Sweet Home 3D : murs, dalle extérieure. */
+const WALL_MESH = /^wall_\d+_\d+$/;
+const GROUND_MESH = /^ground_1$/;
+/** Patchs sol/plafond par pièce : coplanaires avec la dalle, ils percent le parquet. */
+const ROOM_MESH = /^room_\d+_\d+$/;
+/** Murs du balcon (nord, ouest, sud) : remplacés par un garde-corps. */
+const BALCONY_WALL = /^wall_(17|18|19)_\d+$/;
+
+/** Façade ouest : mur plein dans l'export, reconstruit avec les ouvertures du plan. */
+const WEST_FACADE = /^wall_4_\d+$/;
+const WEST_WALL = { x0: -24, x1: -17, z0: -24, z1: 1132, y0: 0, y1: 250 };
+const WEST_OPENINGS = [
+  { z: 150, width: 190, sill: 0, top: 215 }, // porte-fenêtre séjour → balcon
+  { z: 455, width: 120, sill: 95, top: 210 }, // cuisine
+  { z: 668, width: 120, sill: 95, top: 210 }, // chambre 2
+  { z: 939, width: 130, sill: 95, top: 210 }, // chambre 1
+];
+/** Taille d'une tuile de parquet en cm (≈ 4 lames de 42 cm). */
+const WOOD_TILE_CM = 170;
+/** Taille d'une tuile d'enduit mural en cm. */
+const PLASTER_TILE_CM = 200;
 
 /**
  * Hauteur 3D (m) par type d'appareil.
@@ -55,6 +87,10 @@ function prepareApartment(root) {
   const center = box.getCenter(new THREE.Vector3());
   const size = box.getSize(new THREE.Vector3());
 
+  const wood = createWoodTexture();
+  const plaster = createPlasterTexture();
+  const balconyBox = new THREE.Box3();
+
   root.traverse((child) => {
     if (!child.isMesh || !child.geometry) return;
 
@@ -62,6 +98,44 @@ function prepareApartment(root) {
     const thick = meshBox.max.y - meshBox.min.y;
     if (meshBox.min.y > CEILING_Y_CM && thick < CEILING_THICKNESS_CM) {
       child.visible = false;
+      return;
+    }
+
+    // Patchs de sol par pièce : ils comblent les découpes de la dalle ground_1.
+    // Les laisser en blanc y ferait des triangles clairs dans le parquet.
+    if (ROOM_MESH.test(child.name)) {
+      child.castShadow = false;
+      child.receiveShadow = true;
+      if (wood) child.material = makeWoodMaterial(child, wood);
+      return;
+    }
+
+    // Dalle extérieure (sol unique du modèle) → parquet.
+    if (GROUND_MESH.test(child.name) || materialName(child) === 'ground_1') {
+      child.castShadow = false;
+      child.receiveShadow = true;
+      if (wood) child.material = makeWoodMaterial(child, wood);
+      return;
+    }
+
+    // Façade ouest : masquée puis reconstruite avec les ouvertures du plan.
+    if (WEST_FACADE.test(child.name)) {
+      child.visible = false;
+      return;
+    }
+
+    // Balcon : murs pleins de 2,5 m dans l'export → on les masque et on pose
+    // un garde-corps à la place (cf. BalconyRailing).
+    if (BALCONY_WALL.test(child.name)) {
+      balconyBox.union(meshBox);
+      child.visible = false;
+      return;
+    }
+
+    if (WALL_MESH.test(child.name)) {
+      child.castShadow = true;
+      child.receiveShadow = true;
+      child.material = makeWallMaterial(meshBox, child.geometry, plaster);
       return;
     }
 
@@ -73,6 +147,33 @@ function prepareApartment(root) {
     child.material = Array.isArray(child.material) ? next : next[0];
   });
 
+  // Façade ouest reconstruite avec les fenêtres du plan.
+  buildWestFacade(root, plaster);
+
+  // Sol du balcon : dalle béton claire par-dessus le parquet de ground_1.
+  if (!balconyBox.isEmpty()) {
+    const bw = balconyBox.max.x - balconyBox.min.x;
+    const bd = balconyBox.max.z - balconyBox.min.z;
+    const deck = new THREE.Mesh(
+      new THREE.PlaneGeometry(bw, bd),
+      new THREE.MeshStandardMaterial({
+        color: '#a9a6a1',
+        roughness: 0.92,
+        metalness: 0.02,
+        side: THREE.DoubleSide,
+        envMapIntensity: 0.25,
+      })
+    );
+    deck.rotation.x = -Math.PI / 2;
+    deck.position.set(
+      balconyBox.min.x + bw / 2,
+      0.5,
+      balconyBox.min.z + bd / 2
+    );
+    deck.receiveShadow = true;
+    root.add(deck);
+  }
+
   root.position.set(-center.x, -box.min.y, -center.z);
 
   return {
@@ -82,7 +183,60 @@ function prepareApartment(root) {
     minZ: box.min.z,
     centerX: center.x,
     centerZ: center.z,
+    balcony: balconyBox.isEmpty()
+      ? null
+      : {
+          minX: balconyBox.min.x,
+          maxX: balconyBox.max.x,
+          minZ: balconyBox.min.z,
+          maxZ: balconyBox.max.z,
+        },
   };
+}
+
+function materialName(child) {
+  const mat = Array.isArray(child.material) ? child.material[0] : child.material;
+  return mat?.name ?? '';
+}
+
+/**
+ * UV planaires : on projette sur le plan perpendiculaire à l'axe le plus fin
+ * du mesh (la normale du mur). Sweet Home 3D n'exporte aucun UV.
+ */
+function ensurePlanarUV(geometry, meshBox, force = false) {
+  if (geometry.attributes.uv && !force) return;
+  const size = meshBox.getSize(new THREE.Vector3());
+  const axis =
+    size.x <= size.y && size.x <= size.z ? 'x' : size.z <= size.x && size.z <= size.y ? 'z' : 'y';
+  const pos = geometry.attributes.position;
+  const uv = new Float32Array(pos.count * 2);
+  for (let i = 0; i < pos.count; i += 1) {
+    const x = pos.getX(i);
+    const y = pos.getY(i);
+    const z = pos.getZ(i);
+    if (axis === 'x') {
+      uv[i * 2] = z / PLASTER_TILE_CM;
+      uv[i * 2 + 1] = y / PLASTER_TILE_CM;
+    } else if (axis === 'z') {
+      uv[i * 2] = x / PLASTER_TILE_CM;
+      uv[i * 2 + 1] = y / PLASTER_TILE_CM;
+    } else {
+      uv[i * 2] = x / PLASTER_TILE_CM;
+      uv[i * 2 + 1] = z / PLASTER_TILE_CM;
+    }
+  }
+  geometry.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+}
+
+function makeWallMaterial(meshBox, geometry, plaster) {
+  ensurePlanarUV(geometry, meshBox);
+  return new THREE.MeshStandardMaterial({
+    map: plaster ?? null,
+    roughness: 0.95,
+    metalness: 0,
+    side: THREE.DoubleSide,
+    envMapIntensity: 0.25,
+  });
 }
 
 function toStandardMaterial(mat) {
@@ -90,7 +244,7 @@ function toStandardMaterial(mat) {
   if (mat.isMeshStandardMaterial || mat.isMeshPhysicalMaterial) {
     const next = mat.clone();
     next.side = THREE.DoubleSide;
-    next.envMapIntensity = 0.55;
+    next.envMapIntensity = 0.35;
     if (next.map) next.map.colorSpace = THREE.SRGBColorSpace;
     return next;
   }
@@ -98,17 +252,42 @@ function toStandardMaterial(mat) {
   const std = new THREE.MeshStandardMaterial({
     color: mat.color ? mat.color.clone() : new THREE.Color('#cccccc'),
     map: mat.map ?? null,
-    roughness: specular > 0.4 ? 0.35 : 0.78,
+    roughness: specular > 0.4 ? 0.35 : 0.72,
     metalness: specular > 0.6 ? 0.45 : 0.04,
     transparent: Boolean(mat.transparent),
     opacity: mat.opacity ?? 1,
     side: THREE.DoubleSide,
-    envMapIntensity: 0.55,
+    envMapIntensity: 0.35,
   });
   if (mat.map) {
     std.map.colorSpace = THREE.SRGBColorSpace;
   }
   return std;
+}
+
+/**
+ * Parquet sur la dalle. Sweet Home 3D n'exporte pas d'UV sur le sol :
+ * on génère un mapping planaire XZ, une tuile par WOOD_TILE_CM.
+ */
+function makeWoodMaterial(mesh, wood) {
+  const geo = mesh.geometry;
+  if (!geo.attributes.uv) {
+    const pos = geo.attributes.position;
+    const uv = new Float32Array(pos.count * 2);
+    for (let i = 0; i < pos.count; i += 1) {
+      uv[i * 2] = pos.getX(i) / WOOD_TILE_CM;
+      uv[i * 2 + 1] = pos.getZ(i) / WOOD_TILE_CM;
+    }
+    geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  }
+
+  return new THREE.MeshStandardMaterial({
+    map: wood,
+    roughness: 0.58,
+    metalness: 0.02,
+    side: THREE.DoubleSide,
+    envMapIntensity: 0.35,
+  });
 }
 
 /**
@@ -199,8 +378,163 @@ function devicePlanPos(device) {
   };
 }
 
+/**
+ * Reconstruit la façade ouest avec les ouvertures du plan.
+ * Le mur d'origine est un bloc plein : on le remplace par des trumeaux, des
+ * allèges et des linteaux autour de chaque baie, puis on pose cadre et vitre.
+ * La vitre ne projette pas d'ombre, donc le soleil traverse réellement.
+ */
+function buildWestFacade(root, plaster) {
+  const { x0, x1, z0, z1, y0, y1 } = WEST_WALL;
+  const thickness = x1 - x0;
+  const cx = (x0 + x1) / 2;
+
+  const wallMat = new THREE.MeshStandardMaterial({
+    map: plaster ?? null,
+    roughness: 0.95,
+    metalness: 0,
+    side: THREE.DoubleSide,
+    envMapIntensity: 0.25,
+  });
+  const frameMat = new THREE.MeshStandardMaterial({
+    color: '#efeee8',
+    roughness: 0.55,
+    metalness: 0.05,
+    side: THREE.DoubleSide,
+  });
+  const glassMat = new THREE.MeshStandardMaterial({
+    color: '#dbe9f3',
+    emissive: '#c6dae9',
+    emissiveIntensity: 0.35,
+    roughness: 0.12,
+    metalness: 0.05,
+    transparent: true,
+    opacity: 0.72,
+    side: THREE.DoubleSide,
+  });
+
+  const addBox = (za, zb, ya, yb, material = wallMat, thick = thickness) => {
+    if (zb - za < 0.05 || yb - ya < 0.05) return;
+    const geo = new THREE.BoxGeometry(thick, yb - ya, zb - za);
+    geo.computeBoundingBox();
+    ensurePlanarUV(geo, geo.boundingBox, true);
+    const mesh = new THREE.Mesh(geo, material);
+    mesh.position.set(cx, (ya + yb) / 2, (za + zb) / 2);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    root.add(mesh);
+  };
+
+  const openings = [...WEST_OPENINGS].sort((a, b) => a.z - b.z);
+  let cursor = z0;
+  for (const opening of openings) {
+    const za = opening.z - opening.width / 2;
+    const zb = opening.z + opening.width / 2;
+
+    addBox(cursor, za, y0, y1); // trumeau avant la baie
+    addBox(za, zb, y0, opening.sill); // allège
+    addBox(za, zb, opening.top, y1); // linteau
+    cursor = zb;
+
+    const f = 5;
+    addBox(za, za + f, opening.sill, opening.top, frameMat, thickness + 2);
+    addBox(zb - f, zb, opening.sill, opening.top, frameMat, thickness + 2);
+    addBox(za, zb, opening.top - f, opening.top, frameMat, thickness + 2);
+    if (opening.sill > 0) addBox(za, zb, opening.sill, opening.sill + f, frameMat, thickness + 2);
+
+    const glassWidth = opening.width - f * 2;
+    const glassHeight = opening.top - opening.sill - f * 2;
+    if (glassWidth > 0 && glassHeight > 0) {
+      const glass = new THREE.Mesh(new THREE.PlaneGeometry(glassWidth, glassHeight), glassMat);
+      glass.rotation.y = Math.PI / 2;
+      glass.position.set(cx, opening.sill + f + glassHeight / 2, opening.z);
+      glass.castShadow = false;
+      glass.receiveShadow = false;
+      root.add(glass);
+    }
+  }
+  addBox(cursor, z1, y0, y1); // dernier trumeau
+}
+
+/**
+ * Garde-corps du balcon : remplace les murs pleins de l'export SH3D.
+ * Coordonnées en cm, dans le repère brut du modèle : on applique le même
+ * recentrage que `root` (sinon le garde-corps se retrouve au milieu du plan).
+ */
+function BalconyRailing({ bounds, centerX, centerZ }) {
+  const material = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: '#2b2f36',
+        roughness: 0.42,
+        metalness: 0.55,
+        side: THREE.DoubleSide,
+      }),
+    []
+  );
+
+  const bars = useMemo(() => {
+    if (!bounds) return [];
+    const { minX, maxX, minZ, maxZ } = bounds;
+    const step = 12;
+    const inset = 2.5;
+    const out = [];
+    for (let z = minZ + step / 2; z < maxZ; z += step) out.push([minX + inset, z]);
+    for (let x = minX + step / 2; x < maxX; x += step) {
+      out.push([x, minZ + inset]);
+      out.push([x, maxZ - inset]);
+    }
+    return out;
+  }, [bounds]);
+
+  if (!bounds) return null;
+
+  const { minX, maxX, minZ, maxZ } = bounds;
+  const H = 110;
+  const T = 5;
+  const BAR = 1.8;
+  const INSET = 2.5;
+  const midX = (minX + maxX) / 2;
+  const midZ = (minZ + maxZ) / 2;
+  const width = maxX - minX;
+  const depth = maxZ - minZ;
+
+  return (
+    <group position={[-centerX, 0, -centerZ]}>
+      {/* Main courante (3 côtés, le 4e est le mur du séjour) */}
+      <mesh position={[minX + INSET, H, midZ]} material={material}>
+        <boxGeometry args={[T, T, depth]} />
+      </mesh>
+      <mesh position={[midX, H, minZ + INSET]} material={material}>
+        <boxGeometry args={[width, T, T]} />
+      </mesh>
+      <mesh position={[midX, H, maxZ - INSET]} material={material}>
+        <boxGeometry args={[width, T, T]} />
+      </mesh>
+
+      {/* Lisse basse */}
+      <mesh position={[minX + INSET, 6, midZ]} material={material}>
+        <boxGeometry args={[T * 0.7, T * 0.7, depth]} />
+      </mesh>
+      <mesh position={[midX, 6, minZ + INSET]} material={material}>
+        <boxGeometry args={[width, T * 0.7, T * 0.7]} />
+      </mesh>
+      <mesh position={[midX, 6, maxZ - INSET]} material={material}>
+        <boxGeometry args={[width, T * 0.7, T * 0.7]} />
+      </mesh>
+
+      {/* Barreaux verticaux */}
+      {bars.map(([x, z]) => (
+        <mesh key={`${x}-${z}`} position={[x, (H + 6) / 2, z]} material={material}>
+          <boxGeometry args={[BAR, H - 6, BAR]} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
 function ApartmentModel({ onMapped }) {
-  const { scene } = useGLTF(GLB_URL);
+  const { scene } = useGLTF(GLB_URL, DRACO_PATH);
   const { root, map } = useMemo(() => {
     const cloned = scene.clone(true);
     return { root: cloned, map: prepareApartment(cloned) };
@@ -213,6 +547,8 @@ function ApartmentModel({ onMapped }) {
   return (
     <group scale={CM_TO_M}>
       <primitive object={root} />
+      <ApartmentLamps root={root} />
+      <BalconyRailing bounds={map.balcony} centerX={map.centerX} centerZ={map.centerZ} />
     </group>
   );
 }
@@ -264,6 +600,14 @@ function DeviceMarkers({ map }) {
   });
 }
 
+/**
+ * Lampes : RectAreaLight (surface) au lieu de pointLight.
+ * Une surface de 36 cm donne un halo progressif au lieu d'une tache dure
+ * sur les murs. `power` est en lumens (unités physiques de three).
+ * Contrepartie : pas d'ombre portée, et un peu plus coûteux par pixel.
+ */
+const LAMP_LUMENS = 130;
+
 function HomeLights({ map }) {
   const devices = useOrionStore((s) => s.devices);
 
@@ -271,8 +615,7 @@ function HomeLights({ map }) {
     if (!map) return [];
     return Object.values(devices)
       .filter((d) => LIGHT_DEVICE_TYPES.has(d.type) && d.on && d.x != null && d.y != null)
-      .sort((a, b) => (b.brightness ?? 60) - (a.brightness ?? 60))
-      .slice(0, 8);
+      .sort((a, b) => (b.brightness ?? 60) - (a.brightness ?? 60));
   }, [devices, map]);
 
   return lights.map((device) => {
@@ -280,14 +623,14 @@ function HomeLights({ map }) {
     const brightness = (device.brightness ?? 60) / 100;
     const isStrip = device.type === DEVICE_TYPES.YEELIGHT_STRIP;
     return (
-      <pointLight
+      <rectAreaLight
         key={device.id}
-        position={[x, y + 0.15, z]}
+        position={[x, y, z]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        width={isStrip ? 1.6 : 0.36}
+        height={isStrip ? 0.08 : 0.36}
         color={device.color || '#ffd9a0'}
-        intensity={6 * brightness * (isStrip ? 1.4 : 1)}
-        distance={isStrip ? 5.5 : 3.6}
-        decay={2}
-        castShadow={false}
+        power={LAMP_LUMENS * brightness * (isStrip ? 1.4 : 1)}
       />
     );
   });
@@ -338,23 +681,25 @@ export default function FloorPlan3D() {
       <Canvas
         shadows
         dpr={[1, 1.25]}
-        gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, powerPreference: 'default' }}
+        gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, powerPreference: 'default', preserveDrawingBuffer: new URLSearchParams(window.location.search).has('capture') }}
         camera={{ fov: 38, near: 0.1, far: 80, position: [8, 9, 8] }}
         onCreated={({ gl }) => {
-          gl.toneMappingExposure = 1.05;
+          gl.toneMappingExposure = 1;
         }}
       >
         <color attach="background" args={['#050608']} />
-        <hemisphereLight args={['#8ec9ff', '#1a1510', 0.35]} />
-        <ambientLight intensity={0.18} />
+        <hemisphereLight args={['#8ec9ff', '#1a1510', 0.28]} />
+        <ambientLight intensity={0.16} />
         <directionalLight
           position={[6, 10, 4]}
-          intensity={0.85}
+          intensity={0.7}
           color="#f3e7d3"
           castShadow
           shadow-mapSize-width={512}
           shadow-mapSize-height={512}
         />
+        {/* Fill froid opposé : donne du modelé aux faces de murs, sinon uniformes. */}
+        <directionalLight position={[-7, 5, -6]} intensity={0.35} color="#9fc6ff" />
 
         <Suspense fallback={<LoaderOverlay />}>
           <ApartmentModel onMapped={setMap} />
@@ -365,14 +710,14 @@ export default function FloorPlan3D() {
               <FitCamera map={map} />
             </>
           )}
-          <Environment preset="city" environmentIntensity={0.35} />
+          <Environment preset="city" environmentIntensity={0.3} />
         </Suspense>
 
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
+        {/* ContactShadows retiré : plan à y=0 qui se superposait au sol du modèle. */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.02, 0]} receiveShadow>
           <planeGeometry args={[40, 40]} />
           <meshStandardMaterial color="#07080c" roughness={0.92} metalness={0.08} />
         </mesh>
-        <ContactShadows position={[0, 0, 0]} opacity={0.45} scale={18} blur={2.4} far={6} />
 
         <OrbitControls
           makeDefault
@@ -385,9 +730,23 @@ export default function FloorPlan3D() {
           maxDistance={22}
           target={[0, 0.45, 0]}
         />
+
+        {/* Bloom sélectif : seules les ampoules émissives dépassent le seuil. */}
+        <EffectComposer multisampling={0}>
+          {/* Occlusion ambiante : contacts meubles/sol et coins de murs. */}
+          <N8AO quality="performance" halfRes aoRadius={0.45} intensity={5} distanceFalloff={0.8} />
+          <Bloom
+            luminanceThreshold={0.85}
+            luminanceSmoothing={0.3}
+            intensity={0.9}
+            radius={0.7}
+            mipmapBlur
+          />
+          <Vignette offset={0.28} darkness={0.45} />
+        </EffectComposer>
       </Canvas>
     </div>
   );
 }
 
-useGLTF.preload(GLB_URL);
+useGLTF.preload(GLB_URL, DRACO_PATH);
