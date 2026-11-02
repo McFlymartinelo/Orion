@@ -30,15 +30,15 @@ export const rooms = [
   { id: 'entree',    name: 'Entrée',       surface: 4.95,  x: BLDG_X+300, y: 330, w: 220, h: 130, labelX: 540, labelY: 353 },
 
   // Dégagement = moitié de l'Entrée (220/2 = 110) ; WC/Rangement prennent le reste (110)
-  { id: 'rangement', name: 'Rangement',    surface: 1.25,  x: BLDG_X+410, y: 460, w: 110, h: 40,  labelX: 595, labelY: 482 },
+  { id: 'rangement', name: 'Rangement',    surface: 1.25,  x: BLDG_X+410, y: 460, w: 110, h: 40,  labelX: 595, labelY: 482, shortName: 'Rang.' },
 
   { id: 'chambre2',  name: 'Chambre 2',    surface: 9.65,  x: BLDG_X,     y: 460, w: 300, h: 160, hasWindow: true, labelX: 280, labelY: 488 },
-  { id: 'degagement',name: 'Dégagement',   surface: 2.65,  x: BLDG_X+300, y: 460, w: 110, h: 160, labelX: 485, labelY: 488 },
+  { id: 'degagement',name: 'Dégagement',   surface: 2.65,  x: BLDG_X+300, y: 460, w: 110, h: 160, labelX: 485, labelY: 488, shortName: 'Dégag.' },
   { id: 'wc',        name: 'WC',           surface: 1.4,   x: BLDG_X+410, y: 500, w: 110, h: 120, labelX: 595, labelY: 524 },
 
   { id: 'chambre1',  name: 'Chambre 1',    surface: 10.7,  x: BLDG_X,     y: 620, w: 300, h: 210, hasWindow: true, labelX: 280, labelY: 648 },
   // PL supprimé — SDB prend toute la largeur droite (x=430 à x=650)
-  { id: 'sdb',       name: 'Salle de Bain',surface: 3.5,   x: BLDG_X+300, y: 620, w: 220, h: 210, labelX: 540, labelY: 648 },
+  { id: 'sdb',       name: 'Salle de Bain',surface: 3.5,   x: BLDG_X+300, y: 620, w: 220, h: 210, labelX: 540, labelY: 648, shortName: 'SDB' },
 ];
 
 // --- Éléments statiques (non pilotables) reproduits pour le contexte visuel -

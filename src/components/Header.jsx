@@ -48,22 +48,90 @@ export default function Header() {
   const WeatherIcon = WEATHER_ICONS[outdoorCondition] || Cloud;
 
   return (
-    <header className="flex h-[52px] shrink-0 items-center justify-between border-b border-white/10 bg-black/40 px-5 backdrop-blur-md">
-      <div className="flex items-center gap-3">
-        <div className="orion-logo flex h-9 w-9 items-center justify-center rounded-xl border border-sky-400/40 bg-sky-400/10 shadow-[0_0_18px_rgba(56,189,248,0.35)]">
-          <span className="font-display text-base font-bold text-sky-300">O</span>
+    <header className="flex shrink-0 flex-col border-b border-white/10 bg-black/40 backdrop-blur-md md:h-[52px] md:flex-row md:items-center md:justify-between md:px-5">
+      <div className="flex h-[48px] items-center justify-between gap-3 px-3 md:contents">
+        <div className="flex items-center gap-3 md:order-1">
+          <div className="orion-logo flex h-8 w-8 items-center justify-center rounded-xl border border-sky-400/40 bg-sky-400/10 shadow-[0_0_18px_rgba(56,189,248,0.35)] md:h-9 md:w-9">
+            <span className="font-display text-sm font-bold text-sky-300 md:text-base">O</span>
+          </div>
+          <div>
+            <h1 className="font-display text-lg font-bold leading-6 tracking-[0.18em] text-white md:text-xl">
+              ORION
+            </h1>
+            <p className="hidden text-[10px] uppercase tracking-[0.15em] text-slate-400 md:block">
+              {APARTMENT_NAME} · {APARTMENT_REF}
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="font-display text-xl font-bold leading-6 tracking-[0.18em] text-white">
-            ORION
-          </h1>
-          <p className="text-[10px] uppercase tracking-[0.15em] text-slate-400">
-            {APARTMENT_NAME} · {APARTMENT_REF}
-          </p>
+
+        <div className="flex items-center gap-3 md:order-3 md:gap-6">
+          <div
+            role="group"
+            aria-label="Thème d’affichage"
+            className="hidden items-center overflow-hidden rounded-full border border-white/15 bg-white/5 text-[10px] font-semibold uppercase tracking-wide md:flex"
+          >
+            <Palette size={12} className="ml-2.5 text-slate-400" aria-hidden="true" />
+            {THEMES.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setTheme(t.id)}
+                aria-pressed={theme === t.id}
+                className={`px-2.5 py-1.5 transition ${
+                  theme === t.id ? 'bg-sky-400/20 text-sky-200' : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="text-right">
+            <div className="font-display text-xl font-semibold leading-none tracking-wider text-white tabular-nums md:text-2xl">
+              {hh}
+              <span className="text-sky-400">:</span>
+              {mm}
+            </div>
+            <div className="mt-0.5 hidden text-[10px] capitalize text-slate-400 md:block">{dateLabel}</div>
+          </div>
+
+          <div className="hidden h-7 w-px bg-white/10 md:block" />
+
+          <div className="hidden items-center gap-2 text-slate-200 md:flex">
+            <WeatherIcon size={20} className="text-sky-300" strokeWidth={1.8} />
+            <div className="text-sm">
+              <div className="font-semibold tabular-nums">{fmtTemp(netatmo.outdoorTemp)}</div>
+              <div className="text-[10px] uppercase tracking-wide text-slate-500">Extérieur</div>
+            </div>
+          </div>
+
+          <div className="hidden items-center gap-2 text-slate-200 md:flex">
+            <Thermometer size={20} className="text-orange-300" strokeWidth={1.8} />
+            <div className="text-sm">
+              <div className="font-semibold tabular-nums">{fmtTemp(netatmo.indoorTemp)}</div>
+              <div className="text-[10px] uppercase tracking-wide text-slate-500">Salon</div>
+            </div>
+          </div>
+
+          <div
+            className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-1"
+            title={
+              netatmo.connected
+                ? `Netatmo connecté${netatmo.moduleName ? ` · ${netatmo.moduleName}` : ''}`
+                : netatmo.error || 'Netatmo non connecté — valeurs simulées'
+            }
+          >
+            <Home size={12} className={netatmo.connected ? 'text-emerald-400' : 'text-slate-500'} />
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${
+                netatmo.connected ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]' : 'bg-slate-500'
+              } ${netatmo.syncing ? 'orion-pulse' : ''}`}
+            />
+          </div>
         </div>
       </div>
 
-      <nav className="ml-8 mr-auto flex h-full items-stretch gap-1" aria-label="Pages">
+      <nav className="flex h-10 items-stretch gap-1 border-t border-white/5 px-3 md:order-2 md:ml-8 md:mr-auto md:h-full md:border-0 md:px-0" aria-label="Pages">
         {[
           ['home', 'Maison'],
           ['rooms', 'Pièces'],
@@ -74,7 +142,7 @@ export default function Header() {
             type="button"
             onClick={() => setPage(id)}
             aria-current={page === id ? 'page' : undefined}
-            className={`relative px-4 text-xs font-medium transition ${
+            className={`relative flex-1 px-3 text-[11px] font-medium transition md:flex-none md:px-4 md:text-xs ${
               page === id ? 'text-white' : 'text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -83,72 +151,6 @@ export default function Header() {
           </button>
         ))}
       </nav>
-
-      <div className="flex items-center gap-6">
-        <div
-          role="group"
-          aria-label="Thème d’affichage"
-          className="flex items-center overflow-hidden rounded-full border border-white/15 bg-white/5 text-[10px] font-semibold uppercase tracking-wide"
-        >
-          <Palette size={12} className="ml-2.5 text-slate-400" aria-hidden="true" />
-          {THEMES.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setTheme(t.id)}
-              aria-pressed={theme === t.id}
-              className={`px-2.5 py-1.5 transition ${
-                theme === t.id ? 'bg-sky-400/20 text-sky-200' : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="text-right">
-          <div className="font-display text-2xl font-semibold leading-none tracking-wider text-white tabular-nums">
-            {hh}
-            <span className="text-sky-400">:</span>
-            {mm}
-          </div>
-          <div className="mt-0.5 text-[10px] capitalize text-slate-400">{dateLabel}</div>
-        </div>
-
-        <div className="h-7 w-px bg-white/10" />
-
-        <div className="flex items-center gap-2 text-slate-200">
-          <WeatherIcon size={20} className="text-sky-300" strokeWidth={1.8} />
-          <div className="text-sm">
-            <div className="font-semibold tabular-nums">{fmtTemp(netatmo.outdoorTemp)}</div>
-            <div className="text-[10px] uppercase tracking-wide text-slate-500">Extérieur</div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 text-slate-200">
-          <Thermometer size={20} className="text-orange-300" strokeWidth={1.8} />
-          <div className="text-sm">
-            <div className="font-semibold tabular-nums">{fmtTemp(netatmo.indoorTemp)}</div>
-            <div className="text-[10px] uppercase tracking-wide text-slate-500">Salon</div>
-          </div>
-        </div>
-
-        <div
-          className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-1"
-          title={
-            netatmo.connected
-              ? `Netatmo connecté${netatmo.moduleName ? ` · ${netatmo.moduleName}` : ''}`
-              : netatmo.error || 'Netatmo non connecté — valeurs simulées'
-          }
-        >
-          <Home size={12} className={netatmo.connected ? 'text-emerald-400' : 'text-slate-500'} />
-          <span
-            className={`h-1.5 w-1.5 rounded-full ${
-              netatmo.connected ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]' : 'bg-slate-500'
-            } ${netatmo.syncing ? 'orion-pulse' : ''}`}
-          />
-        </div>
-      </div>
     </header>
   );
 }

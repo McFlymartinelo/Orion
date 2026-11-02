@@ -214,7 +214,7 @@ export default function EnergyPage() {
   const maxRoom = Math.max(1, ...byRoom.map((r) => r.watts));
 
   return (
-    <div className={`relative flex min-h-0 flex-1 flex-col pb-3 ${mockup ? 'px-4' : 'px-3'}`}>
+    <div className={`orion-mobile relative flex min-h-0 flex-1 flex-col overflow-y-auto pb-3 lg:overflow-hidden ${mockup ? 'px-4' : 'px-3'}`}>
       {mockup ? (
         <div className="mb-1.5 mt-1 flex h-[50px] shrink-0 flex-col justify-center">
           <div className="text-[9px] font-extrabold tracking-[1.5px] text-[#a6a8c7]">
@@ -228,7 +228,7 @@ export default function EnergyPage() {
         </div>
       )}
 
-      <div className="flex shrink-0 gap-2.5">
+      <div className="grid shrink-0 grid-cols-2 gap-2 lg:flex lg:gap-2.5">
         <Stat
           label="Puissance actuelle"
           value={formatWatts(nowWatts)}
@@ -245,9 +245,9 @@ export default function EnergyPage() {
         <Stat label={`Pic · ${period.label}`} value={points.length ? formatWatts(peak) : '—'} sub="puissance maximale relevée" />
       </div>
 
-      <div className="mt-2.5 grid min-h-0 flex-1 grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] gap-2.5">
-        <section className={`${CARD} flex min-h-0 flex-col p-4`} aria-label="Courbe de puissance">
-          <div className="mb-3 flex shrink-0 items-center gap-3">
+      <div className="mt-2.5 grid min-h-0 flex-1 grid-cols-1 gap-2.5 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+        <section className={`${CARD} flex min-h-[300px] flex-col p-4 lg:min-h-0`} aria-label="Courbe de puissance">
+          <div className="mb-3 flex shrink-0 flex-wrap items-center gap-2 md:gap-3">
             <h3 className="text-[11px] font-semibold uppercase tracking-wider text-slate-200">Puissance mesurée</h3>
             <span className="text-[10px] text-slate-500">
               {firstSample ? `historique depuis ${fmtTime(firstSample)}` : 'aucun relevé pour l’instant'}
@@ -282,7 +282,7 @@ export default function EnergyPage() {
           )}
         </section>
 
-        <div className="grid min-h-0 grid-rows-[auto_minmax(0,1fr)] gap-2.5">
+        <div className="grid min-h-0 grid-rows-none gap-2.5 lg:grid-rows-[auto_minmax(0,1fr)]">
           <section className={`${CARD} p-4`} aria-label="Par prise">
             <h3 className="mb-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-200">Par prise</h3>
             <div className="space-y-2.5">

@@ -65,95 +65,116 @@ export default function MockupHeader() {
   const date = DATE_FORMATTER.format(now);
 
   return (
-    <header className="mx-4 flex h-[52px] shrink-0 items-center gap-[26px] border-b border-[#ffffff12]">
-      <div className="flex min-w-[150px] items-center gap-2.5">
-        <div
-          className="flex h-[34px] w-[34px] items-center justify-center rounded-[11px] text-base font-black text-white shadow-[0_0_22px_#8f59ff70]"
-          style={{ background: 'linear-gradient(145deg,#1eecff,#6d6aff 60%,#ed54bd)' }}
-        >
-          O
+    <header className="mx-3 flex shrink-0 flex-col border-b border-[#ffffff12] md:mx-4 md:h-[52px] md:flex-row md:items-center md:gap-[26px]">
+      <div className="flex h-[48px] items-center gap-2.5 md:contents">
+        <div className="flex items-center gap-2.5 md:min-w-[150px]">
+          <div
+            className="flex h-[30px] w-[30px] items-center justify-center rounded-[10px] text-sm font-black text-white shadow-[0_0_22px_#8f59ff70] md:h-[34px] md:w-[34px] md:rounded-[11px] md:text-base"
+            style={{ background: 'linear-gradient(145deg,#1eecff,#6d6aff 60%,#ed54bd)' }}
+          >
+            O
+          </div>
+          <div>
+            <b className="text-sm tracking-[2.2px] md:text-base md:tracking-[2.6px]">ORION</b>
+            <small className="mt-[3px] hidden text-[8.5px] tracking-[1.1px] text-[#9296b3] md:block">
+              HOME AUTOMATION
+            </small>
+          </div>
         </div>
-        <div>
-          <b className="text-base tracking-[2.6px]">ORION</b>
-          <small className="mt-[3px] block text-[8.5px] tracking-[1.1px] text-[#9296b3]">HOME AUTOMATION</small>
+
+        <nav className="hidden h-full items-center gap-1 md:flex" aria-label="Pages">
+          {TABS.map((tab) => (
+            <button
+              key={tab.name}
+              type="button"
+              onClick={() => pick(tab)}
+              aria-current={page === tab.page ? 'page' : undefined}
+              className={`relative h-full px-3.5 text-xs ${page === tab.page ? 'text-white' : 'text-[#a8aac3] hover:text-white'}`}
+            >
+              {tab.name}
+              {page === tab.page && (
+                <span className="absolute bottom-0 left-[13px] right-[13px] h-0.5 bg-gradient-to-r from-[#4ecbff] to-[#ff4eaa] shadow-[0_0_10px_#e245c9]" />
+              )}
+            </button>
+          ))}
+        </nav>
+
+        <div className="ml-auto flex items-center gap-2 md:order-3 md:gap-4">
+          <div
+            className={`flex items-center gap-[7px] rounded-full border px-[9px] py-1.5 text-[10px] md:px-[11px] ${
+              online
+                ? 'border-[#53dfa055] bg-[#16332c77] text-[#80efb9]'
+                : 'border-white/15 bg-white/5 text-slate-400'
+            }`}
+          >
+            <i
+              className={`h-[7px] w-[7px] rounded-full ${online ? 'bg-[#5ce1a0] shadow-[0_0_9px_#5ce1a0]' : 'bg-slate-500'}`}
+            />
+            <span className="hidden md:inline">{online ? 'MAISON EN LIGNE' : 'MODE SIMULÉ'}</span>
+          </div>
+          <div className="text-right text-sm font-bold tabular-nums md:text-[15px]">
+            {TIME_FORMATTER.format(now)}
+            <small className="mt-0.5 hidden text-[9px] font-medium text-[#9699ba] md:block">
+              {date.charAt(0).toUpperCase() + date.slice(1)}
+            </small>
+          </div>
+
+          <div ref={menuRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setMenuOpen((open) => !open)}
+              title="Réglages"
+              aria-label="Réglages"
+              aria-expanded={menuOpen}
+              className="flex h-9 w-9 items-center justify-center rounded-[11px] border border-[#ffffff18] bg-[#ffffff08] text-[#cbd0ea] md:h-[34px] md:w-[34px]"
+            >
+              <Settings size={16} />
+            </button>
+            {menuOpen && (
+              <div
+                role="menu"
+                aria-label="Thème d’affichage"
+                className="orion-fade-in absolute right-0 top-[42px] z-[70] w-44 rounded-xl border border-[#43516b] bg-[#141a2b] p-1.5 shadow-2xl"
+              >
+                <p className="px-2.5 pb-1 pt-1.5 text-[9px] font-bold uppercase tracking-[1.5px] text-[#9699ba]">Thème</p>
+                {THEMES.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    role="menuitemradio"
+                    aria-checked={theme === t.id}
+                    onClick={() => {
+                      setTheme(t.id);
+                      setMenuOpen(false);
+                    }}
+                    className="flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-[11px] text-[#e4e6f4] hover:bg-white/10"
+                  >
+                    {t.label}
+                    {theme === t.id && <Check size={13} className="text-[#ff6fb9]" />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      <nav className="flex h-full items-center gap-1">
+      <nav className="flex h-10 items-center justify-around border-t border-[#ffffff0a] md:hidden" aria-label="Pages">
         {TABS.map((tab) => (
           <button
             key={tab.name}
             type="button"
             onClick={() => pick(tab)}
             aria-current={page === tab.page ? 'page' : undefined}
-            className={`relative h-full px-3.5 text-xs ${page === tab.page ? 'text-white' : 'text-[#a8aac3] hover:text-white'}`}
+            className={`relative h-full flex-1 px-1 text-[11px] ${page === tab.page ? 'text-white' : 'text-[#a8aac3]'}`}
           >
             {tab.name}
             {page === tab.page && (
-              <span className="absolute bottom-0 left-[13px] right-[13px] h-0.5 bg-gradient-to-r from-[#4ecbff] to-[#ff4eaa] shadow-[0_0_10px_#e245c9]" />
+              <span className="absolute bottom-0 left-1/2 h-0.5 w-8 -translate-x-1/2 bg-gradient-to-r from-[#4ecbff] to-[#ff4eaa] shadow-[0_0_10px_#e245c9]" />
             )}
           </button>
         ))}
       </nav>
-
-      <div className="ml-auto flex items-center gap-4">
-        <div
-          className={`flex items-center gap-[7px] rounded-full border px-[11px] py-1.5 text-[10px] ${
-            online
-              ? 'border-[#53dfa055] bg-[#16332c77] text-[#80efb9]'
-              : 'border-white/15 bg-white/5 text-slate-400'
-          }`}
-        >
-          <i
-            className={`h-[7px] w-[7px] rounded-full ${online ? 'bg-[#5ce1a0] shadow-[0_0_9px_#5ce1a0]' : 'bg-slate-500'}`}
-          />
-          {online ? 'MAISON EN LIGNE' : 'MODE SIMULÉ'}
-        </div>
-        <div className="text-right text-[15px] font-bold tabular-nums">
-          {TIME_FORMATTER.format(now)}
-          <small className="mt-0.5 block text-[9px] font-medium text-[#9699ba]">
-            {date.charAt(0).toUpperCase() + date.slice(1)}
-          </small>
-        </div>
-
-        <div ref={menuRef} className="relative">
-          <button
-            type="button"
-            onClick={() => setMenuOpen((open) => !open)}
-            title="Réglages"
-            aria-label="Réglages"
-            aria-expanded={menuOpen}
-            className="flex h-[34px] w-[34px] items-center justify-center rounded-[11px] border border-[#ffffff18] bg-[#ffffff08] text-[#cbd0ea]"
-          >
-            <Settings size={15} />
-          </button>
-          {menuOpen && (
-            <div
-              role="menu"
-              aria-label="Thème d’affichage"
-              className="orion-fade-in absolute right-0 top-[42px] z-[70] w-44 rounded-xl border border-[#43516b] bg-[#141a2b] p-1.5 shadow-2xl"
-            >
-              <p className="px-2.5 pb-1 pt-1.5 text-[9px] font-bold uppercase tracking-[1.5px] text-[#9699ba]">Thème</p>
-              {THEMES.map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  role="menuitemradio"
-                  aria-checked={theme === t.id}
-                  onClick={() => {
-                    setTheme(t.id);
-                    setMenuOpen(false);
-                  }}
-                  className="flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-[11px] text-[#e4e6f4] hover:bg-white/10"
-                >
-                  {t.label}
-                  {theme === t.id && <Check size={13} className="text-[#ff6fb9]" />}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
 
       <div
         role="status"

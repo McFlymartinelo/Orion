@@ -22,7 +22,9 @@ export default defineConfig({
         background_color: '#050608',
         display: 'fullscreen',
         display_override: ['fullscreen', 'standalone'],
-        orientation: 'landscape',
+        // Laisse le téléphone en portrait (la mise en page s'adapte) et la tablette
+        // en paysage, sans forcer la rotation.
+        orientation: 'any',
         start_url: '/',
         scope: '/',
         lang: 'fr',

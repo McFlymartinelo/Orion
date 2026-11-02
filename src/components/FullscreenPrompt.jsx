@@ -27,7 +27,8 @@ async function enterBrowserFullscreen() {
   if (!req) return false;
   await req.call(el);
   try {
-    await screen.orientation?.lock?.('landscape');
+    // Tablette : on garde l'orientation paysage. Téléphone : on laisse libre.
+    if (window.innerWidth >= 1024) await screen.orientation?.lock?.('landscape');
   } catch {
     // Orientation lock non supporté / refusé — ignore
   }
@@ -47,9 +48,9 @@ export default function FullscreenPrompt() {
       setVisible(false);
       return;
     }
-    // Sur un PC (pas de tactile) : ne pas bloquer tout l'écran.
+    // Sur un PC (pas de tactile) ou un téléphone : ne pas bloquer tout l'écran.
     const hasTouch = navigator.maxTouchPoints > 0 || 'ontouchstart' in window;
-    if (!hasTouch) {
+    if (!hasTouch || window.innerWidth < 1024) {
       setVisible(false);
       return;
     }

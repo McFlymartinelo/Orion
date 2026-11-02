@@ -47,7 +47,7 @@ function RoomCard({ room, devices, selected, onSelect }) {
           onSelect();
         }
       }}
-      className={`${CARD} flex min-h-0 cursor-pointer items-center gap-3 px-4 py-2.5 text-left transition ${
+      className={`${CARD} flex min-h-[96px] cursor-pointer items-center gap-3 px-4 py-2.5 text-left transition lg:min-h-0 ${
         selected ? 'border-sky-400/70 shadow-[0_0_18px_rgba(56,189,248,0.18)]' : 'hover:border-white/25'
       }`}
     >
@@ -141,8 +141,10 @@ function RoomDetail({ room, devices, allDevices, rooms, onSelectRoom }) {
 
   return (
     <section className={`${CARD} flex min-h-0 flex-col gap-3 p-4`} aria-label={`Détail ${room.name}`}>
-      <div className="flex h-[236px] shrink-0 gap-4">
-        <MiniPlan rooms={rooms} devices={allDevices} selectedId={room.id} onSelect={onSelectRoom} />
+      <div className="flex min-h-[210px] shrink-0 gap-4 lg:h-[236px]">
+        <div className="hidden lg:block">
+          <MiniPlan rooms={rooms} devices={allDevices} selectedId={room.id} onSelect={onSelectRoom} />
+        </div>
         <div className="flex min-w-0 flex-1 flex-col">
           <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-slate-500">Pièce sélectionnée</p>
           <h2 className="mt-1 truncate text-xl font-bold text-white">{room.name}</h2>
@@ -169,7 +171,7 @@ function RoomDetail({ room, devices, allDevices, rooms, onSelectRoom }) {
 
       <div className="min-h-0 flex-1">
         {devices.length ? (
-          <div className="grid grid-cols-2 content-start gap-x-2 gap-y-1.5">
+          <div className="grid grid-cols-1 content-start gap-x-2 gap-y-1.5 lg:grid-cols-2">
             {devices.map((d) => (
               <Row key={d.id} h={30}>
                 <span
@@ -209,7 +211,7 @@ export default function RoomsPage() {
   const room = rooms.find((r) => r.id === selectedId) ?? rooms[0];
 
   return (
-    <div className={`relative flex min-h-0 flex-1 flex-col pb-3 ${mockup ? 'px-4' : 'px-3'}`}>
+    <div className={`orion-mobile relative flex min-h-0 flex-1 flex-col overflow-y-auto pb-3 lg:overflow-hidden ${mockup ? 'px-4' : 'px-3'}`}>
       {mockup ? (
         <div className="mb-1.5 mt-1 flex h-[50px] shrink-0 flex-col justify-center">
           <div className="text-[9px] font-extrabold tracking-[1.5px] text-[#a6a8c7]">
@@ -223,8 +225,8 @@ export default function RoomsPage() {
         </div>
       )}
 
-      <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] gap-2.5">
-        <div className="grid min-h-0 grid-cols-2 grid-rows-5 gap-2.5">
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-2.5 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
+        <div className="grid min-h-0 auto-rows-[minmax(96px,auto)] grid-cols-2 gap-2.5 lg:grid-rows-5 lg:auto-rows-auto">
           {rooms.map((r) => (
             <RoomCard
               key={r.id}

@@ -20,13 +20,14 @@ export default function FloorPlanModeToggle() {
           key={id}
           type="button"
           onClick={() => setFloorPlanMode(id)}
-          className={`flex items-center gap-1.5 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide transition ${
+          className={`flex items-center gap-1.5 px-2.5 py-2 text-[11px] font-semibold uppercase tracking-wide transition md:px-3 ${
             mode === id ? 'bg-sky-400/20 text-sky-200' : 'text-slate-400 hover:text-slate-200'
           }`}
           aria-pressed={mode === id}
+          aria-label={label}
         >
           <Icon size={14} />
-          {label}
+          <span className="hidden md:inline">{label}</span>
         </button>
       ))}
     </div>

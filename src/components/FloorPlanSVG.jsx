@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import useOrionStore from '../store/useOrionStore';
+import { useIsMobile } from '../hooks/useMediaQuery';
 import {
   VIEW_BOX,
   staticFixtures,
@@ -31,10 +32,13 @@ function WindowMarks({ room }) {
   );
 }
 
-function RoomShape({ room }) {
+function RoomShape({ room, mobile }) {
   const isBalcon = room.id === 'balcon';
   const isSmall = SMALL_ROOMS.has(room.id);
   const isTiny = TINY_ROOMS.has(room.id);
+  // Sur mobile le plan est très réduit : les libellés longs des petites pièces
+  // déborderaient sur les pièces voisines ou sous le bouton lumière.
+  const label = mobile && room.shortName ? room.shortName : room.name;
   return (
     <g>
       <rect
@@ -76,20 +80,20 @@ function RoomShape({ room }) {
         x={room.labelX}
         y={room.labelY}
         textAnchor="middle"
-        fontSize={isTiny ? 9 : isSmall ? 10.5 : 13}
+        fontSize={mobile ? (isTiny ? 13 : isSmall ? 15 : 20) : isTiny ? 9 : isSmall ? 10.5 : 13}
         fontWeight={600}
         letterSpacing="1.2"
         fill="var(--plan-label)"
         style={{ textTransform: 'uppercase', fontFamily: 'var(--font-sans)' }}
       >
-        {room.name}
+        {label}
       </text>
       {room.surface != null && !isSmall && (
         <text
           x={room.labelX}
-          y={room.labelY + 15}
+          y={room.labelY + (mobile ? 22 : 15)}
           textAnchor="middle"
-          fontSize={9.5}
+          fontSize={mobile ? 14 : 9.5}
           fill="var(--plan-sub)"
         >
           {room.surface} m²
@@ -100,22 +104,31 @@ function RoomShape({ room }) {
 }
 
 /** Bouton coin de pièce : toggle toutes les lumières Hue / Hue Play / Yeelight. */
-function RoomLightToggle({ room, lights, onToggle }) {
+function RoomLightToggle({ room, lights, onToggle, mobile }) {
   if (!lights.length) return null;
 
   const anyOn = lights.some((l) => l.on);
   const compact = room.w < 120 || room.h < 90;
   const r = compact ? 11 : 13;
+  const scale = mobile ? 1.45 : 1;
   // Un peu plus à gauche et plus bas que le coin strict
   // SDB : remonter un peu (sinon trop bas par rapport au libellé / baignoire)
-  const padX = compact ? 22 : 28;
-  const padY = room.id === 'sdb' ? 21 : compact ? 22 : 28;
+  const padX = mobile ? (compact ? 26 : 34) : compact ? 22 : 28;
+  let padY;
+  if (!mobile) {
+    padY = room.id === 'sdb' ? 21 : compact ? 22 : 28;
+  } else if (room.id === 'degagement') {
+    // Bouton en bas à droite pour ne pas recouvrir le libellé court.
+    padY = room.h - 30;
+  } else {
+    padY = room.id === 'sdb' ? 26 : 32;
+  }
   const cx = room.x + room.w - padX;
   const cy = room.y + padY;
 
   return (
     <g
-      transform={`translate(${cx}, ${cy})`}
+      transform={`translate(${cx}, ${cy}) scale(${scale})`}
       onClick={(e) => {
         e.stopPropagation();
         onToggle(room.id);
@@ -156,6 +169,7 @@ function RoomLightToggle({ room, lights, onToggle }) {
 }
 
 export default function FloorPlanSVG() {
+  const mobile = useIsMobile();
   const devices = useOrionStore((s) => s.devices);
   const rooms = useOrionStore((s) => s.rooms);
   const selectedDeviceId = useOrionStore((s) => s.selectedDeviceId);
@@ -203,7 +217,7 @@ export default function FloorPlanSVG() {
 
         {/* Pièces */}
         {rooms.map((room) => (
-          <RoomShape key={room.id} room={room} />
+          <RoomShape key={room.id} room={room} mobile={mobile} />
         ))}
 
         {/* Mobilier statique (repères visuels non pilotables) */}
@@ -218,6 +232,7 @@ export default function FloorPlanSVG() {
             room={room}
             lights={lightsByRoom[room.id] || []}
             onToggle={toggleRoomLights}
+            mobile={mobile}
           />
         ))}
 
@@ -225,7 +240,7 @@ export default function FloorPlanSVG() {
         {deviceList.map((device) => (
           <g
             key={device.id}
-            transform={`translate(${device.x}, ${device.y})`}
+            transform={`translate(${device.x}, ${device.y}) scale(${mobile ? 1.25 : 1})`}
             onPointerDown={(e) => {
               e.stopPropagation();
               selectDevice(device.id);

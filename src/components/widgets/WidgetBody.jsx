@@ -149,17 +149,20 @@ function Climate({ bh }) {
   );
 }
 
-function Scenes({ w, bh }) {
+function Scenes({ w, bh, mobile }) {
   const scenes = useOrionStore((s) => s.scenes);
   const activeScene = useOrionStore((s) => s.activeScene);
   const applyScene = useOrionStore((s) => s.applyScene);
-  const cols = Math.max(2, Math.min(4, Math.floor(w / 92)));
+  const cols = Math.max(2, Math.min(mobile ? 3 : 4, Math.floor(w / 92)));
   const rows = Math.max(1, Math.floor((bh + 6) / 46));
-  const shown = scenes.slice(0, cols * rows);
+  const shown = mobile ? scenes : scenes.slice(0, cols * rows);
   return (
     <div
-      className="grid min-h-0 flex-1 gap-1.5"
-      style={{ gridTemplateColumns: `repeat(${cols}, minmax(0,1fr))`, gridTemplateRows: `repeat(${rows}, minmax(0,1fr))` }}
+      className={mobile ? 'grid gap-1.5' : 'grid min-h-0 flex-1 gap-1.5'}
+      style={{
+        gridTemplateColumns: `repeat(${cols}, minmax(0,1fr))`,
+        ...(mobile ? { gridAutoRows: 'minmax(46px, auto)' } : { gridTemplateRows: `repeat(${rows}, minmax(0,1fr))` }),
+      }}
     >
       {shown.map((scene) => (
         <button
@@ -167,7 +170,7 @@ function Scenes({ w, bh }) {
           type="button"
           onClick={() => applyScene(scene.id)}
           data-active={activeScene === scene.id}
-          className={`orion-chip flex min-h-0 min-w-0 items-center justify-center gap-1.5 rounded-xl border px-1.5 text-[10px] font-semibold uppercase tracking-wide transition active:scale-95 ${
+          className={`orion-chip flex min-h-0 min-w-0 items-center justify-center gap-1.5 rounded-xl border px-1.5 text-[10px] font-semibold uppercase tracking-wide transition active:scale-95 ${mobile ? 'min-h-[46px]' : ''} ${
             activeScene === scene.id
               ? 'border-sky-400/50 bg-sky-400/15 text-white shadow-[0_0_14px_rgba(56,189,248,0.25)]'
               : 'border-white/10 bg-white/[0.03] text-slate-200 hover:bg-white/[0.07]'
@@ -181,15 +184,17 @@ function Scenes({ w, bh }) {
   );
 }
 
-function Lights({ widget, bh }) {
+function Lights({ widget, bh, mobile }) {
   const devices = useOrionStore((s) => s.devices);
   const toggleDevice = useOrionStore((s) => s.toggleDevice);
   const selectDevice = useOrionStore((s) => s.selectDevice);
-  const lights = Object.values(devices)
-    .filter((d) => LIGHT_DEVICE_TYPES.has(d.type) && (widget.room === 'all' || d.room === widget.room))
-    .sort((a, b) => Number(b.on) - Number(a.on));
+  // Ordre stable : ne pas trier par état allumé/éteint, sinon la ligne cliquée
+  // saute en haut de la liste à chaque bascule du switch.
+  const lights = Object.values(devices).filter(
+    (d) => LIGHT_DEVICE_TYPES.has(d.type) && (widget.room === 'all' || d.room === widget.room)
+  );
   if (!lights.length) return <Empty>Aucun éclairage dans cette pièce</Empty>;
-  return lights.slice(0, rowsFit(bh, 28, 6)).map((d) => (
+  return lights.slice(0, mobile ? lights.length : rowsFit(bh, 28, 6)).map((d) => (
     <Row key={d.id}>
       <span
         className={`h-1.5 w-1.5 shrink-0 rounded-full ${d.on ? 'bg-amber-300 shadow-[0_0_6px_rgba(252,211,77,0.8)]' : 'bg-slate-600'}`}
@@ -203,7 +208,7 @@ function Lights({ widget, bh }) {
   ));
 }
 
-function Plugs({ bh }) {
+function Plugs({ bh, mobile }) {
   const devices = useOrionStore((s) => s.devices);
   const toggleDevice = useOrionStore((s) => s.toggleDevice);
   const selectDevice = useOrionStore((s) => s.selectDevice);
@@ -215,8 +220,8 @@ function Plugs({ bh }) {
       <p className="orion-watts shrink-0 font-display text-xl font-bold leading-6 tabular-nums text-white">
         {total} <span className="text-[10px] font-semibold text-slate-500">W · consommation instantanée</span>
       </p>
-      {bh >= 60 &&
-        plugs.slice(0, listRows).map((d) => (
+      {(mobile || bh >= 60) &&
+        plugs.slice(0, mobile ? plugs.length : listRows).map((d) => (
           <Row key={d.id} h={26}>
             <button type="button" onClick={() => selectDevice(d.id)} className="min-w-0 flex-1 truncate text-left text-slate-200">
               {d.name}
@@ -229,13 +234,13 @@ function Plugs({ bh }) {
   );
 }
 
-function Alexa({ bh }) {
+function Alexa({ bh, mobile }) {
   const devices = useOrionStore((s) => s.devices);
   const toggleDevice = useOrionStore((s) => s.toggleDevice);
   const selectDevice = useOrionStore((s) => s.selectDevice);
   const echoes = Object.values(devices).filter((d) => d.type === DEVICE_TYPES.ALEXA);
   if (!echoes.length) return <Empty>Aucune enceinte Alexa</Empty>;
-  return echoes.slice(0, rowsFit(bh, 28, 6)).map((d) => (
+  return echoes.slice(0, mobile ? echoes.length : rowsFit(bh, 28, 6)).map((d) => (
     <Row key={d.id}>
       <button type="button" onClick={() => selectDevice(d.id)} className="min-w-0 flex-1 truncate text-left text-slate-200">
         {d.name}
@@ -246,7 +251,7 @@ function Alexa({ bh }) {
   ));
 }
 
-function Connections({ bh }) {
+function Connections({ bh, mobile }) {
   const hue = useOrionStore((s) => s.hue);
   const netatmo = useOrionStore((s) => s.netatmo);
   const kasa = useOrionStore((s) => s.kasa);
@@ -261,7 +266,7 @@ function Connections({ bh }) {
     ['Alexa', alexa.connected],
     ['Yeelight', yeelight.connected],
   ];
-  return items.slice(0, rowsFit(bh, 26, 5)).map(([name, ok]) => (
+  return items.slice(0, mobile ? items.length : rowsFit(bh, 26, 5)).map(([name, ok]) => (
     <Row key={name} h={26}>
       <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${ok ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]' : 'bg-slate-600'}`} />
       <span className="flex-1 truncate text-slate-200">{name}</span>
@@ -272,8 +277,8 @@ function Connections({ bh }) {
 
 /* ───────── Aperçus des widgets proposés ───────── */
 
-function StaticList({ items, bh }) {
-  return items.slice(0, rowsFit(bh, 26, 5)).map(([label, value]) => (
+function StaticList({ items, bh, mobile }) {
+  return items.slice(0, mobile ? items.length : rowsFit(bh, 26, 5)).map(([label, value]) => (
     <Row key={label} h={26}>
       <span className="flex-1 truncate text-slate-200">{label}</span>
       <span className="text-[10px] text-slate-500">{value}</span>
@@ -281,7 +286,7 @@ function StaticList({ items, bh }) {
   ));
 }
 
-function History() {
+function History({ mobile }) {
   const watts = useOrionStore((s) =>
     Math.round(Object.values(s.devices).reduce((sum, d) => sum + (d.on ? d.watts || 0 : 0), 0))
   );
@@ -291,7 +296,11 @@ function History() {
       <p className="orion-watts shrink-0 font-display text-xl font-bold leading-6 tabular-nums text-white">
         {watts} <span className="text-[10px] font-semibold text-slate-500">W · historique à connecter</span>
       </p>
-      <svg viewBox="0 0 300 50" preserveAspectRatio="none" className="min-h-0 w-full flex-1 overflow-visible">
+      <svg
+        viewBox="0 0 300 50"
+        preserveAspectRatio="none"
+        className={mobile ? 'h-24 w-full overflow-visible' : 'min-h-0 w-full flex-1 overflow-visible'}
+      >
         <path d={`${path} L300 50 0 50Z`} fill="rgba(251,191,36,0.14)" />
         <path d={path} fill="none" stroke="#fbbf24" strokeWidth="2" vectorEffect="non-scaling-stroke" />
       </svg>
@@ -338,7 +347,7 @@ function RoomTemp({ widget, bh }) {
   );
 }
 
-function Shortcut({ bh }) {
+function Shortcut({ bh, mobile }) {
   const applyScene = useOrionStore((s) => s.applyScene);
   const clim = useOrionStore((s) => s.devices['clim-mobile']);
   const toggleDevice = useOrionStore((s) => s.toggleDevice);
@@ -347,15 +356,15 @@ function Shortcut({ bh }) {
     ['❄', clim?.on ? 'Clim off' : 'Clim on', () => clim && toggleDevice(clim.id)],
   ];
   return (
-    <div className="grid min-h-0 flex-1 grid-cols-2 gap-1.5">
+    <div className={mobile ? 'grid grid-cols-2 gap-1.5' : 'grid min-h-0 flex-1 grid-cols-2 gap-1.5'}>
       {actions.map(([icon, label, run]) => (
         <button
           key={label}
           type="button"
           onClick={run}
           className={`orion-chip flex min-h-0 items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.03] text-[10px] font-semibold uppercase tracking-wide text-slate-200 transition hover:bg-white/[0.07] active:scale-95 ${
-            bh < 60 ? '' : 'flex-col'
-          }`}
+            mobile ? 'min-h-[64px]' : ''
+          } ${bh < 60 ? '' : 'flex-col'}`}
         >
           <span className="text-base leading-none">{icon}</span>
           {label}
@@ -377,7 +386,7 @@ const SCHEDULE = [
   ['Scène « Départ »', '08:15'],
 ];
 
-export default function WidgetBody({ widget, w, bh }) {
+export default function WidgetBody({ widget, w, bh, mobile = false }) {
   switch (widget.type) {
     case 'summary':
       return <Summary bh={bh} />;
@@ -386,21 +395,21 @@ export default function WidgetBody({ widget, w, bh }) {
     case 'climate':
       return <Climate bh={bh} />;
     case 'scenes':
-      return <Scenes w={w} bh={bh} />;
+      return <Scenes w={w} bh={bh} mobile={mobile} />;
     case 'lights':
-      return <Lights widget={widget} bh={bh} />;
+      return <Lights widget={widget} bh={bh} mobile={mobile} />;
     case 'plugs':
-      return <Plugs bh={bh} />;
+      return <Plugs bh={bh} mobile={mobile} />;
     case 'alexa':
-      return <Alexa bh={bh} />;
+      return <Alexa bh={bh} mobile={mobile} />;
     case 'connections':
-      return <Connections bh={bh} />;
+      return <Connections bh={bh} mobile={mobile} />;
     case 'history':
-      return <History />;
+      return <History mobile={mobile} />;
     case 'activity':
-      return <StaticList items={ACTIVITY} bh={bh} />;
+      return <StaticList items={ACTIVITY} bh={bh} mobile={mobile} />;
     case 'schedule':
-      return <StaticList items={SCHEDULE} bh={bh} />;
+      return <StaticList items={SCHEDULE} bh={bh} mobile={mobile} />;
     case 'weather':
       return <Weather bh={bh} />;
     case 'airquality':
@@ -408,7 +417,7 @@ export default function WidgetBody({ widget, w, bh }) {
     case 'roomtemp':
       return <RoomTemp widget={widget} bh={bh} />;
     case 'shortcut':
-      return <Shortcut bh={bh} />;
+      return <Shortcut bh={bh} mobile={mobile} />;
     default:
       return null;
   }

@@ -7,6 +7,8 @@ import DeviceOverlay from './DeviceOverlay';
 import WidgetCard from './widgets/WidgetCard';
 import { CatalogModal, ConfigModal } from './widgets/WidgetModals';
 import { WIDGET_TYPES } from '../data/widgetCatalog';
+import { APARTMENT_NAME, APARTMENT_REF } from '../data/mockData';
+import { useIsMobile } from '../hooks/useMediaQuery';
 import useLayoutStore, { DEFAULT_HERO_FRAC } from '../store/useLayoutStore';
 import {
   COLS,
@@ -41,6 +43,7 @@ export default function Dashboard() {
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [configId, setConfigId] = useState(null);
   const [toast, setToast] = useState('');
+  const isMobile = useIsMobile();
 
   const widgets = useLayoutStore((s) => s.widgets);
   const heroFrac = useLayoutStore((s) => s.heroFrac);
@@ -66,12 +69,15 @@ export default function Dashboard() {
     const observer = new ResizeObserver(update);
     observer.observe(el);
     return () => observer.disconnect();
-  }, []);
+  }, [isMobile]);
 
   const heroW = size.w ? clampHeroWidth(size.w, heroFrac) : 0;
   const metrics = useMemo(
-    () => (size.w ? computeMetrics({ width: size.w, height: size.h, heroW, heroH }) : null),
-    [size.w, size.h, heroW, heroH]
+    () =>
+      !isMobile && size.w
+        ? computeMetrics({ width: size.w, height: size.h, heroW, heroH })
+        : null,
+    [isMobile, size.w, size.h, heroW, heroH]
   );
   const packed = useMemo(
     () => (metrics ? pack(widgets, metrics, WIDGET_TYPES, true) : null),
@@ -218,6 +224,98 @@ export default function Dashboard() {
   };
   const configWidget = widgets.find((w) => w.id === configId);
 
+  const catalogModal = catalogOpen ? (
+    <CatalogModal
+      widgets={widgets}
+      metrics={metrics}
+      mobile={isMobile}
+      onAdd={addWidget}
+      onClose={() => setCatalogOpen(false)}
+    />
+  ) : null;
+
+  const configModal = configWidget ? (
+    <ConfigModal
+      widget={configWidget}
+      onChangeRoom={(room) => useLayoutStore.getState().updateWidget(configWidget.id, { room })}
+      onRemove={() => removeWidget(configWidget.id)}
+      onClose={() => setConfigId(null)}
+    />
+  ) : null;
+
+  const toastNode = (
+    <div
+      role="status"
+      aria-live="polite"
+      className={`orion-toast pointer-events-none absolute bottom-6 left-1/2 z-[60] -translate-x-1/2 rounded-xl border border-white/15 bg-[var(--orion-card-from)] px-4 py-2.5 text-[11px] shadow-2xl transition ${
+        toast ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'
+      }`}
+    >
+      {toast}
+    </div>
+  );
+
+  /* ───── Téléphone : plan + widgets empilés, la page défile verticalement ───── */
+  if (isMobile) {
+    const mobileWidth = size.w || (typeof window !== 'undefined' ? window.innerWidth - 24 : 360);
+    return (
+      <div className={`orion-mobile relative flex min-h-0 flex-1 flex-col pb-2 ${mockup ? 'px-3' : 'px-3'}`}>
+        <div className="flex shrink-0 items-center gap-2 py-1.5">
+          <div className="min-w-0">
+            <p className="truncate text-[9px] font-extrabold tracking-[1.5px] text-[#a6a8c7]">
+              TABLEAU DE BORD · {APARTMENT_NAME.toUpperCase()} {APARTMENT_REF}
+            </p>
+            <h1 className="truncate text-[15px] font-bold tracking-[-0.2px]">La maison, en un regard</h1>
+          </div>
+          <button
+            type="button"
+            onClick={() => setCatalogOpen(true)}
+            className="ml-auto flex shrink-0 items-center gap-1.5 rounded-full border border-sky-400/50 bg-sky-400/10 px-3 py-2 text-[11px] font-semibold text-sky-100 transition active:scale-95"
+          >
+            <Plus size={14} />
+            Ajouter
+          </button>
+        </div>
+
+        <div ref={stageRef} className="orion-scroll min-h-0 flex-1 space-y-3 overflow-y-auto pb-5 pt-1">
+          <div
+            className="relative w-full overflow-hidden"
+            style={{ height: 'clamp(300px, 56dvh, 500px)' }}
+          >
+            <FloorPlanPanel />
+          </div>
+
+          {widgets.map((widget) => (
+            <WidgetCard
+              key={widget.id}
+              widget={widget}
+              rect={{ width: mobileWidth }}
+              mobile
+              onConfigure={() => setConfigId(widget.id)}
+              onRemove={() => removeWidget(widget.id)}
+            />
+          ))}
+
+          <button
+            type="button"
+            onClick={() => setCatalogOpen(true)}
+            className="orion-addslot flex h-24 w-full flex-col items-center justify-center gap-1.5 rounded-2xl border-[1.5px] border-dashed border-white/20 bg-white/[0.02] text-[12px] text-slate-400 active:border-sky-400/60 active:bg-sky-400/5"
+          >
+            <span className="orion-addslot-plus flex h-8 w-8 items-center justify-center rounded-lg border border-white/20 bg-white/5">
+              <Plus size={16} />
+            </span>
+            Ajouter un widget
+          </button>
+        </div>
+
+        <DeviceOverlay />
+        {catalogModal}
+        {configModal}
+        {toastNode}
+      </div>
+    );
+  }
+
   return (
     <div className={`relative flex min-h-0 flex-1 flex-col pb-3 ${mockup ? 'px-4' : 'px-3'}`}>
       {mockup ? (
@@ -330,28 +428,9 @@ export default function Dashboard() {
       </div>
 
       <DeviceOverlay />
-
-      {catalogOpen && metrics && (
-        <CatalogModal widgets={widgets} metrics={metrics} onAdd={addWidget} onClose={() => setCatalogOpen(false)} />
-      )}
-      {configWidget && (
-        <ConfigModal
-          widget={configWidget}
-          onChangeRoom={(room) => useLayoutStore.getState().updateWidget(configWidget.id, { room })}
-          onRemove={() => removeWidget(configWidget.id)}
-          onClose={() => setConfigId(null)}
-        />
-      )}
-
-      <div
-        role="status"
-        aria-live="polite"
-        className={`orion-toast pointer-events-none absolute bottom-6 left-1/2 z-[60] -translate-x-1/2 rounded-xl border border-white/15 bg-[var(--orion-card-from)] px-4 py-2.5 text-[11px] shadow-2xl transition ${
-          toast ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'
-        }`}
-      >
-        {toast}
-      </div>
+      {catalogModal}
+      {configModal}
+      {toastNode}
     </div>
   );
 }

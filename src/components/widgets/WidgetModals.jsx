@@ -52,14 +52,25 @@ function Choice({ id, type, candidate, onPick }) {
 }
 
 /** Catalogue : widgets disponibles dans l'appli / widgets proposés pour plus tard. */
-export function CatalogModal({ widgets, metrics, onAdd, onClose }) {
-  const candidates = useMemo(
-    () =>
-      Object.fromEntries(
-        Object.keys(WIDGET_TYPES).map((id) => [id, tryAdd(widgets, id, metrics, WIDGET_TYPES, makeWidgetId)])
-      ),
-    [widgets, metrics]
-  );
+export function CatalogModal({ widgets, metrics, onAdd, onClose, mobile = false }) {
+  const candidates = useMemo(() => {
+    // Sur téléphone, les widgets sont empilés : tout tient, sans grille à valider.
+    if (mobile) {
+      return Object.fromEntries(
+        Object.entries(WIDGET_TYPES).map(([id, type]) => [
+          id,
+          {
+            id: makeWidgetId(),
+            type: id,
+            room: type.room ? type.defaultRoom ?? 'sejour' : 'all',
+          },
+        ])
+      );
+    }
+    return Object.fromEntries(
+      Object.keys(WIDGET_TYPES).map((id) => [id, tryAdd(widgets, id, metrics, WIDGET_TYPES, makeWidgetId)])
+    );
+  }, [widgets, metrics, mobile]);
   const section = (group) =>
     Object.entries(WIDGET_TYPES)
       .filter(([, t]) => t.group === group)
@@ -67,35 +78,39 @@ export function CatalogModal({ widgets, metrics, onAdd, onClose }) {
 
   return (
     <Overlay onClose={onClose} label="Ajouter un widget">
-      <div className="orion-modal max-h-full w-full max-w-[960px] overflow-hidden rounded-3xl border border-white/15 bg-[var(--orion-modal)] p-5 shadow-2xl">
-        <div className="flex items-start justify-between">
+      <div className="orion-modal flex max-h-full w-full max-w-[960px] flex-col overflow-hidden rounded-3xl border border-white/15 bg-[var(--orion-modal)] p-4 shadow-2xl md:p-5">
+        <div className="flex shrink-0 items-start justify-between gap-3">
           <div>
             <h2 className="text-base font-semibold text-white">Ajouter un widget</h2>
             <p className="mt-1 text-[11px] text-slate-400">
-              Les widgets grisés ne tiennent pas dans l’espace restant : réduisez ou retirez un widget pour libérer de la place.
+              {mobile
+                ? 'Choisissez un widget : il sera ajouté en bas de la page.'
+                : 'Les widgets grisés ne tiennent pas dans l’espace restant : réduisez ou retirez un widget pour libérer de la place.'}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Fermer"
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/15 text-slate-300 hover:bg-white/10"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/15 text-slate-300 hover:bg-white/10"
           >
-            <X size={15} />
+            <X size={16} />
           </button>
         </div>
 
-        <p className="mb-2 mt-4 flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-          Déjà disponibles dans Orion
-          <span className="rounded-full border border-emerald-400/40 px-2 py-px text-[8px] text-emerald-300">FONCTIONNEL</span>
-        </p>
-        <div className="grid grid-cols-4 gap-2">{section('existing')}</div>
+        <div className="orion-scroll mt-3 min-h-0 overflow-y-auto pr-1">
+          <p className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            Déjà disponibles dans Orion
+            <span className="rounded-full border border-emerald-400/40 px-2 py-px text-[8px] text-emerald-300">FONCTIONNEL</span>
+          </p>
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-4">{section('existing')}</div>
 
-        <p className="mb-2 mt-4 flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-          Proposés · évolution future
-          <span className="rounded-full border border-violet-300/50 px-2 py-px text-[8px] text-violet-200">APERÇU SEULEMENT</span>
-        </p>
-        <div className="grid grid-cols-4 gap-2">{section('proposed')}</div>
+          <p className="mb-2 mt-4 flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            Proposés · évolution future
+            <span className="rounded-full border border-violet-300/50 px-2 py-px text-[8px] text-violet-200">APERÇU SEULEMENT</span>
+          </p>
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-4">{section('proposed')}</div>
+        </div>
       </div>
     </Overlay>
   );
