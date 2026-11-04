@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import FloorPlanSVG from './FloorPlanSVG';
 import FloorPlanModeToggle from './FloorPlanModeToggle';
 import FloorPlan3DBoundary from './FloorPlan3DBoundary';
+import RenduView from './RenduView';
 import useOrionStore from '../store/useOrionStore';
 
 const FloorPlan3D = lazy(() => import('./FloorPlan3D'));
@@ -17,13 +18,7 @@ export default function FloorPlanPanel({ showToggle = true }) {
     <div className="classic-view relative h-full w-full overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] p-3 backdrop-blur-md">
       {showToggle && <FloorPlanModeToggle />}
       {floorPlanMode === 'render' ? (
-        <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-xl bg-[#080914]">
-          <img
-            src="/images/apartment-render.png"
-            alt="Rendu en coupe de l’appartement"
-            className="h-full w-full object-contain"
-          />
-        </div>
+        <RenduView />
       ) : floorPlanMode === '3d' ? (
         <FloorPlan3DBoundary>
           <Suspense

@@ -1,0 +1,64 @@
+{
+  "image": {
+    "largeur": 1920,
+    "hauteur": 1080
+  },
+  "groupes": {
+    "plafonnier_cuisine": {
+      "x": 0.537,
+      "y": 0.3588
+    },
+    "plafonnier_entree": {
+      "x": 0.6588,
+      "y": 0.4743
+    },
+    "plafonnier_degagement": {
+      "x": 0.5405,
+      "y": 0.554
+    },
+    "plafonnier_bureau": {
+      "x": 0.4462,
+      "y": 0.4431
+    },
+    "plafonnier_chambre1": {
+      "x": 0.3311,
+      "y": 0.5574
+    },
+    "plafonnier_wc": {
+      "x": 0.5413,
+      "y": 0.6391
+    },
+    "plafonnier_sdb": {
+      "x": 0.4109,
+      "y": 0.7152
+    },
+    "lustre_sejour": {
+      "x": 0.691,
+      "y": 0.2702
+    },
+    "ruban_tv": {
+      "x": 0.7449,
+      "y": 0.2191
+    },
+    "hueplay_tv": {
+      "x": 0.7357,
+      "y": 0.2956
+    },
+    "bande_sejour": {
+      "x": 0.6116,
+      "y": 0.3629
+    },
+    "cave": {
+      "x": 0.8724,
+      "y": 0.4117
+    },
+    "lampes_bureau": {
+      "x": 0.3823,
+      "y": 0.5763
+    },
+    "pc": {
+      "x": 0.369,
+      "y": 0.5308
+    }
+  }
+}
